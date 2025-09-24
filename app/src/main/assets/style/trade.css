@@ -1,0 +1,154 @@
+/* Quick Trade Styles */
+.quick-trade-section {
+  background: linear-gradient(to bottom, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.trade-section-title {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 24px;
+  letter-spacing: -0.02em;
+}
+
+#tradePair {
+  width: 100%;
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: 14px;
+  color: #e2e8f0;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+#tradePair:hover {
+  border-color: rgba(148, 163, 184, 0.4);
+  background: rgba(30, 41, 59, 0.9);
+}
+
+#tradePair optgroup {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.95);
+}
+
+#tradePair option {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 14px;
+  padding: 12px;
+  background: rgb(30, 41, 59);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.trade-pair-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+}
+
+.pair-symbol {
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.pair-prices {
+  display: flex;
+  gap: 12px;
+}
+
+.price-tag {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.price-bid {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.price-ask {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.duration-wrapper {
+  position: relative;
+}
+
+.duration-wrapper input {
+  padding-right: 45px !important;
+  text-align: center;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.duration-wrapper::after {
+  content: 'min';
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.menu-logout {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 16px;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 8px;
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.menu-logout:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+/* Animation for price changes */
+@keyframes priceUp {
+  0% { color: #e2e8f0; }
+  50% { color: #22c55e; }
+  100% { color: #e2e8f0; }
+}
+
+@keyframes priceDown {
+  0% { color: #e2e8f0; }
+  50% { color: #ef4444; }
+  100% { color: #e2e8f0; }
+}
+
+.price-up { animation: priceUp 1s ease; }
+.price-down { animation: priceDown 1s ease; }

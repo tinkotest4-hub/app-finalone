@@ -1,0 +1,297 @@
+/* Dashboard Styles */
+:root {
+    --bottom-nav-height: 64px;
+}
+
+/* Layout */
+body[data-page="dashboard"] {
+    padding-bottom: var(--bottom-nav-height);
+    background-color: var(--background-dark);
+    background-image: 
+        radial-gradient(circle at 10% 20%, rgba(0, 122, 255, 0.03) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(0, 255, 157, 0.03) 0%, transparent 40%);
+}
+
+.dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+/* Header */
+.dashboard-header {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: var(--card-dark);
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-logo {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.header-logo img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-brand {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-title {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    font-size: 1.25rem;
+    background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-teal) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-subtitle {
+    font-size: 0.75rem;
+    color: var(--text-grey);
+}
+
+/* Balance Cards */
+.balance-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .balance-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.balance-card {
+    background: var(--card-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.balance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-blue), var(--primary-teal));
+}
+
+.balance-label {
+    color: var(--text-grey);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.balance-amount {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Trading Section */
+.trading-section {
+    background: var(--card-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.trading-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+@media (min-width: 768px) {
+    .trading-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--card-dark);
+    border-top: 1px solid var(--border-color);
+    height: var(--bottom-nav-height);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0.5rem;
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: var(--text-grey);
+    transition: color 0.3s;
+    padding: 0.5rem;
+}
+
+.nav-item.active {
+    color: var(--primary-blue);
+}
+
+.nav-item svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 4px;
+}
+
+.nav-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Cards and Forms */
+.card {
+    background: var(--card-dark);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.card-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.form-group {
+    margin-bottom: 1rem;
+}
+
+.form-label {
+    display: block;
+    color: var(--text-grey);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary-blue);
+}
+
+/* Action Buttons */
+.action-btn {
+    width: 100%;
+    padding: 0.875rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary-blue);
+    color: var(--text-light);
+}
+
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: var(--text-light);
+}
+
+/* Market Cards */
+.market-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.market-pair {
+    font-weight: 500;
+}
+
+.market-price {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 600;
+}
+
+.price-up {
+    color: #10B981;
+}
+
+.price-down {
+    color: #EF4444;
+}
+
+/* Toast Notifications */
+.toast {
+    position: fixed;
+    bottom: calc(var(--bottom-nav-height) + 1rem);
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--card-dark);
+    color: var(--text-light);
+    padding: 1rem 2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    border: 1px solid var(--border-color);
+}
+
+/* Responsiveness */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0.5rem;
+    }
+
+    .balance-amount {
+        font-size: 1.5rem;
+    }
+
+    .card {
+        padding: 1rem;
+    }
+}

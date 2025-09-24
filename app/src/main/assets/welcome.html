@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+    <title>PRIME EDGEMARKET</title>
+    <link rel="stylesheet" href="style/main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-green: #00ff9d;
+            --primary-teal: #00b4d8;
+            --background-dark: #000000;
+            --text-light: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo-container {
+            margin-top: max(4vh, 1.5rem);
+            text-align: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .logo {
+            width: min(120px, 30vw);
+            height: auto;
+            margin-bottom: 1rem;
+            filter: drop-shadow(0 0 10px rgba(0, 255, 157, 0.2));
+        }
+
+        .brand-name {
+            text-align: center;
+            margin-top: max(3vh, 1.5rem);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .prime {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 800;
+            font-size: clamp(2rem, 8vw, 3rem);
+            background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-teal) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+            letter-spacing: 1px;
+        }
+
+        .edgemarket {
+            font-family: 'Montserrat', sans-serif;
+            font-size: clamp(1.8rem, 7vw, 2.8rem);
+            background: linear-gradient(90deg, var(--primary-green) 0%, var(--primary-teal) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            opacity: 0.9;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-wrap {
+            background: linear-gradient(135deg, rgba(0, 255, 157, 0.05) 0%, rgba(0, 180, 216, 0.05) 100%);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: min(20px, 4vw);
+            padding: clamp(1.5rem, 5vw, 2.5rem);
+            margin: max(2vh, 1rem) auto;
+            width: min(90%, 600px);
+            box-shadow: 0 8px 32px rgba(0, 255, 157, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body data-page="welcome">
+<main class="hero-wrap">
+    <div class="logo-container">
+        <img src="logo/logo.jpg" alt="PRIME EDGEMARKET Logo" class="logo">
+    </div>
+    <div class="brand-name">
+        <span class="prime">PRIME</span>
+        <span class="edgemarket">EDGEMARKET</span>
+    </div>
+    <p class="hero-sub">Global Multi-Trading Platform</p>
+
+    <button class="btn hero-btn" id="getStartedBtn" data-link="login.html">
+        <span>Get Started</span>
+        <svg width="24" height="24" viewBox="0 0 24 24" class="arrow">
+            <path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </button>
+
+    <div class="hero-glow"></div>
+</main>
+
+<style>
+    .hero-sub {
+        font-family: 'Poppins', sans-serif;
+        font-size: clamp(1rem, 4vw, 1.2rem);
+        color: rgba(255, 255, 255, 0.8);
+        margin: clamp(1rem, 4vh, 2rem) 0;
+        text-align: center;
+        letter-spacing: 0.5px;
+    }
+
+    .hero-btn {
+        background: linear-gradient(135deg, var(--primary-green) 0%, var(--primary-teal) 100%);
+        border: none;
+        border-radius: 50px;
+        color: var(--background-dark);
+        cursor: pointer;
+        font-family: 'Poppins', sans-serif;
+        font-size: clamp(1rem, 4vw, 1.1rem);
+        font-weight: 600;
+        padding: clamp(0.8rem, 3vw, 1.2rem) clamp(1.5rem, 5vw, 2.5rem);
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+        margin: 0 auto;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 255, 157, 0.2);
+    }
+
+    .hero-btn:active {
+        transform: translateY(1px);
+    }
+
+    .arrow {
+        transition: transform 0.3s ease;
+    }
+
+    .hero-btn:hover .arrow {
+        transform: translateX(4px);
+    }
+
+    .hero-glow {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 150%;
+        height: 150%;
+        background: radial-gradient(circle, rgba(0, 255, 157, 0.1) 0%, transparent 70%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .toast {
+        position: fixed;
+        bottom: max(20px, 5vh);
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.9);
+        backdrop-filter: blur(10px);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.9rem;
+        z-index: 1000;
+        transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .toast.hidden {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+        pointer-events: none;
+    }
+
+    @media (max-height: 600px) {
+        .logo { width: min(80px, 20vw); }
+        .hero-wrap { padding: 1rem; }
+        .hero-sub { margin: 0.8rem 0; }
+    }
+
+    @media (orientation: landscape) and (max-height: 500px) {
+        body { min-height: 100%; }
+        .hero-wrap {
+            margin: 1rem auto;
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 1rem;
+            align-items: center;
+        }
+        .logo-container { margin-top: 0; }
+        .brand-name { margin-top: 0; }
+    }
+</style>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>

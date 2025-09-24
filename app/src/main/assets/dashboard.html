@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>PrimeEdgeMarket — Dashboard</title>
+    <link rel="stylesheet" href="style/main.css" />
+    <link rel="stylesheet" href="style/dashboard.css" />
+    <link rel="stylesheet" href="style/trading.css" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body data-page="dashboard">
+    <!-- Header -->
+    <header class="dashboard-header">
+        <div class="header-logo">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo">
+            <div class="header-brand">
+                <div class="header-title">PrimeEdgeMarket</div>
+                <div class="header-subtitle">Multi Trading Platform</div>
+            </div>
+        </div>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- Balance Section -->
+        <div class="balance-grid">
+            <div class="balance-card">
+                <div class="balance-label">Total Balance</div>
+                <div id="balTotal" class="balance-amount">$0.00</div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">Deposit Balance</div>
+                <div id="balDeposit" class="balance-amount">$0.00</div>
+            </div>
+            <div class="balance-card">
+                <div class="balance-label">Trading Balance</div>
+                <div id="balTrading" class="balance-amount">$0.00</div>
+            </div>
+        </div>
+
+        <!-- Trading Section -->
+        <div class="trading-grid">
+            <!-- Balance Convert -->
+            <div class="card">
+                <h3 class="card-title">Transfer Balance</h3>
+                <form id="convertForm" class="form">
+                    <div class="form-group">
+                        <label class="form-label">Transfer Direction</label>
+                        <select id="convertDirection" class="form-input">
+                            <option value="dep-to-trade">Deposit → Trading</option>
+                            <option value="trade-to-dep">Trading → Deposit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount (USD)</label>
+                        <input type="number" id="convertAmount" class="form-input" placeholder="Enter amount" min="1" step="1" />
+                    </div>
+                    <button class="action-btn btn-primary" type="submit">Transfer</button>
+                </form>
+                <div id="convertMsg" class="msg"></div>
+            </div>
+
+            <!-- Quick Trade -->
+            <div class="card">
+                <h3 class="card-title">Quick Trade</h3>
+                <form id="tradeForm" class="form">
+                    <div class="form-group">
+                        <label class="form-label">Trading Pair</label>
+                        <select id="tradePair" class="form-input"></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Amount (USD)</label>
+                        <input type="number" id="tradeAmount" class="form-input" placeholder="Enter amount" min="10" step="10" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Duration</label>
+                        <select id="tradeTime" class="form-input">
+                            <option value="1">1 min</option>
+                            <option value="2">2 min</option>
+                            <option value="3">3 min</option>
+                            <option value="5">5 min</option>
+                            <option value="10">10 min</option>
+                            <option value="15">15 min</option>
+                        </select>
+                    </div>
+                    <div class="form-actions" style="display:flex;gap:0.5rem">
+                        <button class="action-btn btn-primary" type="button" id="buyBtn">Buy</button>
+                        <button class="action-btn btn-danger" type="button" id="sellBtn">Sell</button>
+                    </div>
+                </form>
+                <div id="tradeMsg" class="msg"></div>
+            </div>
+        </div>
+
+        <!-- Market Section -->
+        <div class="card">
+            <h3 class="card-title">Live Markets</h3>
+            <div id="markets" class="markets"></div>
+        </div>
+
+        <!-- Trade History -->
+        <div class="card">
+            <h3 class="card-title">Trade History</h3>
+            <div id="tradesList" class="trades"></div>
+        </div>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="deposit.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20" />
+            </svg>
+            <span class="nav-label">Deposit</span>
+        </a>
+        <a href="withdraw.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20" transform="rotate(45 12 12)" />
+            </svg>
+            <span class="nav-label">Withdraw</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span class="nav-label">Settings</span>
+        </a>
+        <a href="#" class="nav-item" id="logoutNavBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span class="nav-label">Logout</span>
+        </a>
+    </nav>
+
+    <div id="toast" class="toast hidden">
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

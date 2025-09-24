@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>PrimeEdgeMarket — Sign Up</title>
+    <link rel="stylesheet" href="style/main.css" />
+    <link rel="stylesheet" href="style/auth.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body class="signup-page">
+    <main class="auth-shell">
+        <div class="logo-section">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo" class="logo">
+            <h1 class="brand-name">PrimeEdgeMarket</h1>
+            <p class="tagline">Best Multi Trading Platform</p>
+        </div>
+
+        <div class="auth-card">
+            <h2 class="welcome-title">Create Account</h2>
+            <p class="welcome-subtitle">Join the future of trading</p>
+
+            <div class="tab-container">
+                <a href="login.html" class="tab-btn">Login</a>
+                <button class="tab-btn active">Register</button>
+            </div>
+
+        <form id="signupForm" class="signup-form">
+            <div class="form-group">
+                <label for="fullName">Full Name</label>
+                <div class="input-wrapper">
+                    <input type="text" id="fullName" name="fullName" required 
+                           placeholder="Enter your full name">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <div class="input-wrapper">
+                    <input type="email" id="email" name="email" required 
+                           placeholder="Enter your email">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">Username</label>
+                <div class="input-wrapper">
+                    <input type="text" id="username" name="username" required 
+                           placeholder="Choose a username">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <div class="input-wrapper">
+                    <input type="tel" id="phone" name="phone" required 
+                           placeholder="Enter your phone number">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="country">Country</label>
+                <div class="input-wrapper">
+                    <input type="text" id="country" name="country" required 
+                           placeholder="Enter your country">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Create a password">
+                    <button type="button" class="toggle-password" data-for="password">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <div class="input-wrapper">
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Confirm your password">
+                    <button type="button" class="toggle-password" data-for="confirmPassword">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="referralCode">Referral Code <span class="optional-label">(optional)</span></label>
+                <div class="input-wrapper">
+                    <input type="text" id="referralCode" name="referralCode" 
+                           placeholder="Enter referral code if you have one">
+                </div>
+            </div>
+
+            <div id="error-message" class="error-message hidden"></div>
+                <div id="error-message" class="error-message hidden"></div>
+                <button type="submit" class="submit-btn">Create Account</button>
+            </form>
+        </div>
+    </main>
+
+    <div id="toast" class="toast hidden">
+        <span class="toast-message"></span>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        // Show toast messages
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const messageEl = toast.querySelector('.toast-message');
+            messageEl.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
+
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                fullName: document.getElementById('fullName').value,
+                email: document.getElementById('email').value,
+                username: document.getElementById('username').value,
+                phone: document.getElementById('phone').value,
+                country: document.getElementById('country').value,
+                password: document.getElementById('password').value,
+                confirmPassword: document.getElementById('confirmPassword').value,
+                referralCode: document.getElementById('referralCode').value
+            };
+            
+            const errorMsg = document.getElementById('error-message');
+            
+            // Validate passwords match
+            if (formData.password !== formData.confirmPassword) {
+                toast('Passwords do not match!');
+                errorMsg.textContent = 'Passwords do not match';
+                errorMsg.classList.remove('hidden');
+                return;
+            }
+            
+            // Create new user object
+            const newUser = {
+                ...formData,
+                registrationDate: new Date().toISOString()
+            };
+            delete newUser.confirmPassword;
+            
+            const result = Store.register(newUser);
+            
+            if (result.success) {
+                toast('Registration successful!');
+                
+                // Notify admin panel if it's open
+                window.parent.postMessage({
+                    type: 'registration',
+                    data: newUser
+                }, '*');
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    navigate('dashboard.html');
+                }, 1000);
+            } else {
+                toast(result.error);
+                errorMsg.textContent = result.error;
+                errorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Toggle password visibility
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-for');
+                const input = document.getElementById(targetId);
+                input.type = input.type === 'password' ? 'text' : 'password';
+            });
+        });
+
+        // Check if already logged in
+        if (Store.isLoggedIn()) {
+            const userType = sessionStorage.getItem('userType');
+            const redirectPage = userType === 'admin' ? 'admin.html' : 'dashboard.html';
+            window.location.href = redirectPage;
+        }
+
+        // Password visibility toggle color update
+        document.querySelectorAll('.toggle-password').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-for');
+                const input = document.getElementById(targetId);
+                input.type = input.type === 'password' ? 'text' : 'password';
+                this.querySelector('svg').style.color = input.type === 'password' ? 'currentColor' : '#007AFF';
+            });
+        });
+    </script>
+</body>
+</html>
+
+<script>
+document.getElementById('signupForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const fullName = document.getElementById('fullName').value;
+    const email = document.getElementById('email').value;
+    const username = document.getElementById('username').value;
+    const phone = document.getElementById('phone').value;
+    const country = document.getElementById('country').value;
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const referralCode = document.getElementById('referralCode').value;
+    const errorMsg = document.getElementById('error-message');
+    
+    // Basic validation
+    if (password !== confirmPassword) {
+        toast('Passwords do not match');
+        errorMsg.textContent = 'Passwords do not match';
+        errorMsg.classList.remove('hidden');
+        return;
+    }
+    
+    // Create new user object
+    const newUser = {
+        fullName,
+        email,
+        username,
+        phone,
+        country,
+        password,
+        referralCode,
+        registrationDate: new Date().toISOString()
+    };
+    
+    const result = Store.register(newUser);
+    
+    if (result.success) {
+        // Store the registration event for admin panel
+        const registrationEvent = {
+            type: 'registration',
+            data: newUser
+        };
+        
+        // Notify admin panel if it's open
+        window.parent.postMessage(registrationEvent, '*');
+        
+        toast('Registration successful!');
+        setTimeout(() => {
+            navigate('dashboard.html');
+        }, 1000);
+    } else {
+        toast(result.error);
+        errorMsg.textContent = result.error;
+        errorMsg.classList.remove('hidden');
+    }
+});
+
+<div id="toast" class="toast hidden">
+    <span class="toast-message"></span>
+</div>
+
+<style>
+    .signup-page {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background-color: var(--background-dark);
+    }
+
+    .auth-shell {
+        width: 100%;
+        max-width: 400px;
+        padding: 0 1rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .logo-section {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+        z-index: 2;
+        padding-top: 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .logo {
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 0 30px rgba(0, 255, 157, 0.15);
+        object-fit: cover;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        padding: 2px;
+        background: var(--background-dark);
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .brand-name {
+        font-family: 'Montserrat', sans-serif;
+        font-weight: 700;
+        font-size: 1.75rem;
+        background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-teal) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.5px;
+    }
+
+    .tagline {
+        color: var(--text-grey);
+        font-size: 0.9rem;
+    }
+
+    .auth-card {
+        background: var(--card-dark);
+        border-radius: 24px;
+        padding: 2rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(20px);
+        width: 100%;
+    }
+
+    .welcome-title {
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-align: center;
+        background: linear-gradient(180deg, var(--text-light) 0%, rgba(255, 255, 255, 0.8) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .welcome-subtitle {
+        color: var(--text-grey);
+        text-align: center;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+        opacity: 0.8;
+    }
+
+    .tab-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        background: var(--input-bg);
+        padding: 0.5rem;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+    }
+
+    .tab-btn {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        border-radius: 8px;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 500;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: transparent;
+        color: var(--text-grey);
+    }
+
+    .tab-btn.active {
+        background: var(--primary-blue);
+        color: white;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-grey);
+        font-size: 0.9rem;
+    }
+
+    .input-wrapper {
+        position: relative;
+    }
+
+    .input-wrapper input {
+        width: 100%;
+        padding: 0.9rem 1rem;
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        background: var(--input-bg);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.95rem;
+        transition: all 0.3s ease;
+    }
+
+    .input-wrapper input:focus {
+        outline: none;
+        border-color: var(--primary-blue);
+        box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.1);
+    }
+
+    .input-wrapper input::placeholder {
+        color: rgba(158, 163, 174, 0.5);
+    }
+
+    .toggle-password {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-grey);
+        cursor: pointer;
+        padding: 0;
+        opacity: 0.6;
+        transition: opacity 0.3s ease;
+    }
+
+    .toggle-password:hover {
+        opacity: 1;
+    }
+
+    .optional-label {
+        color: var(--text-grey);
+        font-size: 0.8rem;
+        opacity: 0.7;
+        margin-left: 0.5rem;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, var(--primary-blue) 0%, var(--primary-teal) 100%);
+        color: white;
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        margin-top: 1rem;
+    }
+
+    .submit-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+            90deg,
+            transparent,
+            rgba(255, 255, 255, 0.1),
+            transparent
+        );
+        transition: 0.5s;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 122, 255, 0.4);
+    }
+
+    .submit-btn:hover::before {
+        left: 100%;
+    }
+
+    .toast {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(10, 10, 10, 0.95);
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        color: white;
+        font-size: 0.9rem;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        border: 1px solid var(--border-color);
+        backdrop-filter: blur(10px);
+    }
+
+    .toast.hidden {
+        opacity: 0;
+        transform: translateX(-50%) translateY(20px);
+        pointer-events: none;
+    }
+
+    @media (max-width: 480px) {
+        .auth-shell {
+            padding: 0 1rem;
+        }
+
+        .auth-card {
+            padding: 1.5rem;
+        }
+
+        .logo {
+            width: 90px;
+            height: 90px;
+        }
+
+        .logo-section {
+            padding-top: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+    }
+
+    @media (min-width: 481px) {
+        body {
+            padding: 0;
+        }
+        
+        .logo-section {
+            padding-top: 2rem;
+            margin-bottom: 3rem;
+        }
+    }
+</style>
+
+<script>
+document.querySelectorAll('.toggle-password').forEach(button => {
+    button.addEventListener('click', function() {
+        const inputId = this.getAttribute('data-for');
+        const passwordInput = document.getElementById(inputId);
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        
+        this.innerHTML = type === 'password' ? 
+            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' :
+            '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>';
+    });
+});
+
+// Handle form submission
+document.getElementById('signupForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    // Get form data
+    const formData = {
+        fullName: document.getElementById('fullName').value,
+        email: document.getElementById('email').value,
+        username: document.getElementById('username').value,
+        phone: document.getElementById('phone').value,
+        country: document.getElementById('country').value,
+        password: document.getElementById('password').value,
+        confirmPassword: document.getElementById('confirmPassword').value,
+        referralCode: document.getElementById('referralCode').value
+    };
+
+    // Validate passwords match
+    if (formData.password !== formData.confirmPassword) {
+        showToast('Passwords do not match');
+        return;
+    }
+
+    try {
+        // Send data to admin/server
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (response.ok) {
+            showToast('Registration successful!');
+            // Redirect to login page after successful registration
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 1500);
+        } else {
+            const error = await response.json();
+            showToast(error.message || 'Registration failed. Please try again.');
+        }
+    } catch (error) {
+        showToast('Network error. Please try again.');
+    }
+});
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    const toastMessage = toast.querySelector('.toast-message');
+    toastMessage.textContent = message;
+    toast.classList.remove('hidden');
+    setTimeout(() => {
+        toast.classList.add('hidden');
+    }, 3000);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>EdgeApp — Settings</title>
+    <link rel="stylesheet" href="style/main.css">
+</head>
+<body data-page="settings">
+<header id="appBar" class="appbar">
+    <div class="brand">
+        <div class="logo">PEA</div>
+        <div class="brand-text">
+            <div class="title">PrimeEdgeApp</div>
+            <div class="subtitle">Multi-Trading Platform</div>
+        </div>
+    </div>
+    <nav class="nav">
+        <a class="btn ghost" href="dashboard.html">Dashboard</a>
+        <a class="btn ghost" href="deposit.html">Deposit</a>
+        <a class="btn ghost" href="withdraw.html">Withdraw</a>
+        <a class="btn ghost" href="settings.html">Settings</a>
+        <a id="adminLink" class="btn ghost hidden" href="admin.html">Admin</a>
+        <button id="logoutBtn" class="btn danger">Logout</button>
+    </nav>
+</header>
+
+<main class="container narrow">
+    <h2 class="section-title">Account Settings</h2>
+    <div class="card lift">
+        <div class="profile" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+                <div class="label">Name</div>
+                <div id="profileName" class="value">—</div>
+            </div>
+            <div>
+                <div class="label">Email</div>
+                <div id="profileEmail" class="value">—</div>
+            </div>
+        </div>
+        <hr />
+        <p class="hint">Local demo only — data saved on your device.</p>
+    </div>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>

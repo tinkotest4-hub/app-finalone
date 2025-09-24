@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>EdgeApp — Deposit</title>
+    <link rel="stylesheet" href="style/main.css">
+</head>
+<body data-page="deposit">
+<header id="appBar" class="appbar">
+    <div class="brand">
+        <div class="logo">EPA</div>
+        <div class="brand-text">
+            <div class="title">PrimeEdgeApp</div>
+            <div class="subtitle">Multi-Trading Platform</div>
+        </div>
+    </div>
+    <nav class="nav">
+        <a class="btn ghost" href="dashboard.html">Dashboard</a>
+        <a class="btn ghost" href="deposit.html">Deposit</a>
+        <a class="btn ghost" href="withdraw.html">Withdraw</a>
+        <a class="btn ghost" href="settings.html">Settings</a>
+        <a id="adminLink" class="btn ghost hidden" href="admin.html">Admin</a>
+        <button id="logoutBtn" class="btn danger">Logout</button>
+    </nav>
+</header>
+
+<main class="container narrow">
+    <h2 class="section-title">Deposit Funds</h2>
+    <div class="card lift">
+        <form id="depositForm" class="form">
+            <div class="form-row">
+                <label>Asset</label>
+                <select id="depositAsset" class="input">
+                    <option>BTC</option>
+                    <option>ETH</option>
+                    <option>USDT-TRC20</option>
+                    <option>USDC-TRC20</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>Amount (USD)</label>
+                <input type="number" id="depositAmount" class="input" placeholder="Min 10" min="10" step="10" />
+            </div>
+            <button class="btn solid" type="submit">Create Deposit Request</button>
+            <div id="depositMsg" class="msg"></div>
+        </form>
+    </div>
+
+    <div id="depositGenerated" class="card lift hidden">
+        <h3 class="card-title">Payment Instructions</h3>
+        <p class="tiny">Send to the address below within <b id="depCountdown">10:00</b></p>
+        <div class="address-box">
+            <code id="depAddress"></code>
+            <button id="copyAddrBtn" class="btn ghost">Copy</button>
+        </div>
+        <p class="hint">Note — admin must approve to credit your balance.</p>
+    </div>
+
+    <div class="card lift">
+        <h3 class="card-title">Your Deposit Requests</h3>
+        <div id="myDeposits"></div>
+    </div>
+</main>
+
+<div id="toast" class="toast hidden"></div>
+<script src="app.js"></script>
+</body>
+</html>

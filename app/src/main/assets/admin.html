@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PrimeEdgeMarket — Admin</title>
+    <link rel="stylesheet" href="style/main.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #007AFF;
+            --primary-green: #00ff9d;
+            --primary-teal: #00b4d8;
+            --background-dark: #000000;
+            --card-dark: #0A0A0A;
+            --text-light: #ffffff;
+            --text-grey: #9EA3AE;
+            --border-color: #1A1A1A;
+            --input-bg: #111111;
+            --success-green: #10B981;
+            --warning-yellow: #F59E0B;
+            --danger-red: #EF4444;
+        }
+
+        html, body {
+            background: #000000;
+            min-height: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+        }
+    </style>
+</head>
+<body data-page="admin" class="admin-page">
+    <header id="appBar" class="appbar">
+        <div class="brand">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo" class="admin-logo">
+            <div class="brand-text">
+                <div class="title">PrimeEdgeMarket</div>
+                <div class="subtitle">Admin Dashboard</div>
+            </div>
+        </div>
+        <nav class="nav">
+            <button class="nav-btn active" data-tab="users">
+                <span class="nav-icon">👥</span>
+                Users
+            </button>
+            <button class="nav-btn" data-tab="deposits">
+                <span class="nav-icon">💰</span>
+                Deposits
+            </button>
+            <button class="nav-btn" data-tab="withdrawals">
+                <span class="nav-icon">📤</span>
+                Withdrawals
+            </button>
+            <button id="logoutBtn" class="btn-logout">Logout</button>
+        </nav>
+    </header>
+
+    <main class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">User Management</h1>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">New Today</div>
+                    <div class="stat-value" id="newUsers">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="users-container card">
+            <div class="table-header">
+                <div>Full Name</div>
+                <div>Email</div>
+                <div>Username</div>
+                <div>Phone</div>
+                <div>Country</div>
+                <div>Referral</div>
+                <div>Status</div>
+                <div>Registered</div>
+            </div>
+            <div class="users-list" id="usersList">
+                <!-- User entries will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast hidden">
+        <span class="toast-message"></span>
+    </div>
+
+    <style>
+        .admin-page {
+            background: var(--background-dark);
+            min-height: 100vh;
+        }
+
+        .appbar {
+            background: var(--card-dark);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+        }
+
+        .admin-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text .title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-teal) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-grey);
+        }
+
+        .nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-grey);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--input-bg);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-logout {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            margin-left: 1rem;
+        }
+
+        .admin-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--card-dark);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            min-width: 150px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-grey);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .users-container {
+            background: var(--card-dark);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            padding: 1rem;
+            background: var(--input-bg);
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .users-list {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-item:hover {
+            background: var(--input-bg);
+        }
+
+        .user-item.new {
+            animation: highlightNew 2s ease-out;
+        }
+
+        @keyframes highlightNew {
+            0% { background-color: rgba(0, 255, 157, 0.1); }
+            100% { background-color: transparent; }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-yellow);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .toast {
+            background: var(--card-dark) !important;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 1024px) {
+            .table-header, .user-item {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .table-header > div:nth-child(n+5),
+            .user-item > div:nth-child(n+5) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+            }
+
+            .nav {
+                display: none;
+            }
+        }
+    </style>
+
+    <script>
+        // Keep track of registered users
+        let users = [];
+        let todayUsers = 0;
+        const usersList = document.getElementById('usersList');
+        const totalUsersElement = document.getElementById('totalUsers');
+        const newUsersElement = document.getElementById('newUsers');
+
+        // Function to add a new user to the list
+        function addUser(userData) {
+            users.push(userData);
+            todayUsers++;
+            
+            updateStats();
+            renderUser(userData);
+        }
+
+        // Update statistics
+        function updateStats() {
+            totalUsersElement.textContent = users.length;
+            newUsersElement.textContent = todayUsers;
+        }
+
+        // Render a user in the list
+        function renderUser(userData) {
+            const userElement = document.createElement('div');
+            userElement.className = 'user-item new';
+            
+            const date = new Date().toLocaleString();
+            
+            userElement.innerHTML = `
+                <div>${userData.fullName}</div>
+                <div>${userData.email}</div>
+                <div>${userData.username}</div>
+                <div>${userData.phone}</div>
+                <div>${userData.country}</div>
+                <div>${userData.referralCode || 'N/A'}</div>
+                <div><span class="status-badge active">Active</span></div>
+                <div>${date}</div>
+            `;
+
+            usersList.insertBefore(userElement, usersList.firstChild);
+
+            // Remove the highlight after animation
+            setTimeout(() => {
+                userElement.classList.remove('new');
+            }, 2000);
+        }
+
+        // Listen for new registrations
+        window.addEventListener('message', function(event) {
+            if (event.data.type === 'registration') {
+                addUser(event.data.data);
+                showToast('New user registered!');
+            }
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMessage = toast.querySelector('.toast-message');
+            toastMessage.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Handle navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                // Handle tab switching here
+            });
+        });
+
+        // Handle logout
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            // Add logout logic here
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>

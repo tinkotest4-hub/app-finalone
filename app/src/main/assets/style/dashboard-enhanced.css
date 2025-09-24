@@ -1,0 +1,142 @@
+/* Enhanced Mobile-First Styles */
+.dashboard-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: max(16px, min(24px, 4vw));
+}
+
+/* Typography */
+body {
+  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Responsive Quick Trade */
+.quick-trade-container {
+  background: linear-gradient(to bottom, rgba(30, 41, 59, 0.95), rgba(15, 23, 42, 0.95));
+  border-radius: 16px;
+  padding: clamp(16px, 4vw, 24px);
+  margin: 16px auto;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.quick-trade-header {
+  font-size: clamp(18px, 3vw, 24px);
+  font-weight: 600;
+  color: #e2e8f0;
+  margin-bottom: clamp(16px, 3vw, 24px);
+  letter-spacing: -0.02em;
+}
+
+/* Form Layout */
+.trade-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: clamp(12px, 2vw, 20px);
+}
+
+.trade-input-group {
+  margin-bottom: clamp(12px, 2vw, 16px);
+}
+
+.trade-label {
+  font-size: clamp(12px, 1.5vw, 14px);
+  font-weight: 500;
+  color: #94a3b8;
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+
+.trade-input, .trade-select {
+  width: 100%;
+  background: rgba(30, 41, 59, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  padding: clamp(12px, 2vw, 14px);
+  color: #e2e8f0;
+  font-size: clamp(14px, 2vw, 15px);
+  transition: all 0.2s ease;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+  padding: 12px max(16px, 4vw);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #94a3b8;
+  text-decoration: none;
+  font-size: clamp(11px, 1.5vw, 12px);
+  font-weight: 500;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  .trade-form-row {
+    flex-direction: column;
+  }
+  
+  .trade-input, .trade-select {
+    padding: 14px; /* Larger touch targets */
+  }
+  
+  .btn {
+    width: 100%;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  
+  .bottom-nav {
+    padding: 8px;
+  }
+  
+  .bottom-nav-item {
+    padding: 6px;
+  }
+}
+
+/* Ensure content doesn't get hidden behind bottom nav */
+body {
+  padding-bottom: 80px;
+}
+
+/* Price Tags in Trading Pair Select */
+.pair-price-tag {
+  display: inline-flex;
+  gap: 8px;
+  margin-left: 8px;
+  font-size: 13px;
+}
+
+.bid-price {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.ask-price {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+}

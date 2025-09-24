@@ -1,0 +1,179 @@
+:root {
+    --primary-blue: #007AFF;
+    --primary-green: #00ff9d;
+    --primary-teal: #00b4d8;
+    --background-dark: #000000;
+    --card-dark: #0A0A0A;
+    --text-light: #ffffff;
+    --text-grey: #9EA3AE;
+    --border-color: #1A1A1A;
+    --input-bg: #111111;
+    --success-green: #10B981;
+    --warning-yellow: #F59E0B;
+    --danger-red: #EF4444;
+    --radius: 8px;
+    --shadow: 0 4px 24px rgba(0,0,0,0.4);
+}
+
+/* Reset-ish */
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;color:var(--text-light);background:var(--background-dark)}
+h1,h2,h3{margin:0 0 .35rem}
+p{margin:.35rem 0}
+hr{border:none;border-top:1px solid #e7eaf0;margin:16px 0}
+
+.hidden{display:none!important}
+.tiny{font-size:12px;color:#6b7480}
+.mb8{margin-bottom:8px}
+.center{display:grid;place-items:center}
+.center-col{display:flex;flex-direction:column;justify-content:center;align-items:center}
+.lift{transition:transform .12s ease, box-shadow .2s ease}
+.lift:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(0,0,0,.12)}
+.badge{display:inline-block;padding:4px 8px;border-radius:999px;background:#eef3ff;color:#334155;font-size:12px}
+
+/* App Bar */
+.appbar{
+  position:sticky;top:0;z-index:20;background:var(--card-dark);box-shadow:var(--shadow);
+  display:flex;align-items:center;justify-content:space-between;padding:10px 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+.brand{display:flex;gap:10px;align-items:center}
+.logo{
+  width:36px;height:36px;border-radius:50%;display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--primary-blue),var(--primary-teal));color:var(--text-light);
+  font-weight:800;letter-spacing:.5px
+}
+.brand-text .title{font-weight:700}
+.brand-text .subtitle{font-size:12px;color:#6b7480}
+
+.nav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.btn{
+  appearance:none;border:none;border-radius:12px;padding:10px 14px;font-weight:700;cursor:pointer;
+  box-shadow:0 6px 16px rgba(0,0,0,.08);transition:transform .05s ease, box-shadow .2s ease, background .2s ease, color .2s ease
+}
+.btn:active{transform:translateY(1px)}
+.btn.solid{background:var(--green);color:#fff}
+.btn.ghost{background:#fff;border:1px solid #d9dee5;color:#2a2f37}
+.btn.danger{background:var(--red);color:#fff}
+.btn.buy{background:var(--green);color:#fff}
+.btn.sell{background:#d93025;color:#fff}
+.btn.full{width:100%}
+.btn.xl{padding:14px 22px;border-radius:999px;font-size:16px}
+
+/* Layout */
+.container{max-width:1100px;margin:0 auto;padding:18px 14px}
+.container.narrow{max-width:720px}
+.section-title{margin:8px 0 14px}
+
+/* Grid helpers */
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:repeat(2,1fr)}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+@media (max-width:1000px){.grid-3{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:720px){.grid-2,.grid-3{grid-template-columns:1fr}}
+
+/* Cards */
+.card{
+  background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px
+}
+.card-title{font-weight:800;color:var(--ink-2)}
+.card-title-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+
+/* HERO (welcome) */
+.fill-green{
+  min-height:100vh;background:
+    radial-gradient(1200px 600px at 10% 10%, rgba(255,255,255,.08), transparent 60%),
+    linear-gradient(135deg,var(--green),var(--green-dark));
+  color:#fff;position:relative;overflow:hidden
+}
+.hero-wrap{position:relative;z-index:2;text-align:center;display:flex;flex-direction:column;gap:18px;align-items:center;justify-content:center;min-height:100vh;padding:0 24px}
+.hero-badge{display:inline-block;background:rgba(255,255,255,.12);padding:6px 12px;border-radius:999px;font-weight:700;letter-spacing:.5px}
+.hero-title{font-size:42px;line-height:1.15;font-weight:900}
+.hero-title span{color:#c8ffdf;text-shadow:0 6px 24px rgba(0,0,0,.25)}
+.hero-sub{opacity:.9;font-size:16px}
+.hero-btn{display:inline-flex;gap:10px;align-items:center;background:#c8ffdf;color:#0b3d20;border:none;border-radius:999px;padding:14px 22px;font-weight:900}
+.hero-btn .arrow{transform:translateX(0);transition:transform .2s ease}
+.hero-btn:hover .arrow{transform:translateX(3px)}
+.hero-glow{position:absolute;inset:auto -20% -20% -20%;height:60vh;background:radial-gradient(50% 50% at 50% 50%, rgba(255,255,255,.18), transparent 60%);filter:blur(40px);z-index:1;pointer-events:none}
+
+/* Auth */
+.auth-shell{
+  width:min(560px,92vw);margin:60px auto;background:var(--card-dark);border-radius:24px;box-shadow:0 4px 24px rgba(0,0,0,0.4);padding:22px;border:1px solid var(--border-color)
+}
+.auth-header{display:flex;gap:12px;align-items:center;margin-bottom:8px}
+.auth-logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;background:linear-gradient(135deg,var(--primary-blue),var(--primary-teal));color:var(--text-light);font-weight:900}
+.auth-title{font-size:20px;font-weight:900;color:var(--text-light)}
+.auth-sub{font-size:12px;color:var(--text-grey)}
+
+.seg-tabs{display:flex;gap:8px;margin:6px 0 14px}
+.seg{border:1px solid var(--border-color);background:var(--card-dark);border-radius:999px;padding:8px 14px;cursor:pointer;color:var(--text-light)}
+.seg.active{background:var(--primary-blue);color:var(--text-light);border-color:var(--primary-blue)}
+
+.form{display:grid;gap:10px}
+.form.inline{grid-auto-flow:column;align-items:center}
+.form-row{display:grid;gap:6px}
+.input{appearance:none;border:1px solid var(--border-color);border-radius:12px;padding:10px 12px;font-size:14px;background:var(--input-bg);color:var(--text-light);outline:none}
+.input:focus{border-color:var(--primary-blue)}
+.label{font-size:12px;color:var(--text-grey)}
+.hint{font-size:12px;color:var(--text-grey)}
+.msg{margin-top:8px;font-size:13px;color:var(--text-grey)}
+.msg.error{color:#ef4444}
+.msg.success{color:#2e7d32}
+
+/* Balances */
+.balance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:8px}
+.balance-item{background:#f7faf7;border:1px solid #e2f1e5;border-radius:14px;padding:12px}
+.amount{font-size:26px;font-weight:900;color:var(--green-dark)}
+@media (max-width:720px){
+  .balance-grid{grid-template-columns:1fr}
+}
+
+/* Convert responsive form */
+.form.inline{grid-template-columns:1fr 1fr auto}
+@media (max-width:720px){
+  .form.inline{grid-template-columns:1fr}
+}
+
+/* Markets */
+.markets{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+@media (max-width:920px){.markets{grid-template-columns:1fr}}
+.market-row{
+  display:flex;align-items:center;justify-content:space-between;border:1px solid #e7eaf0;
+  border-radius:14px;padding:10px 12px;gap:10px;background:#fff
+}
+.market-title{font-weight:800;color:#1f2937}
+.market-prices{display:flex;gap:10px;align-items:center}
+.price-chip{font-size:12px;border-radius:999px;padding:6px 10px;border:1px solid #d9dee5}
+.price-chip.buy{border-color:var(--buy);color:var(--buy);cursor:pointer}
+.price-chip.sell{border-color:var(--sell);color:var(--sell);cursor:pointer}
+.tick-up{animation:blinkUp .5s}
+.tick-down{animation:blinkDown .5s}
+@keyframes blinkUp{0%{background:#e6f7ee}100%{background:transparent}}
+@keyframes blinkDown{0%{background:#ffefef}100%{background:transparent}}
+
+/* Trades */
+.trades{display:grid;gap:8px}
+.trade-row{display:grid;grid-template-columns:1.2fr .6fr .6fr .8fr .8fr auto;gap:8px;align-items:center;border:1px solid #e7eaf0;border-radius:12px;padding:10px;background:#fff}
+@media (max-width:920px){.trade-row{grid-template-columns:1fr 1fr 1fr;row-gap:6px}}
+.badge-pill{display:inline-block;padding:4px 10px;border-radius:999px;font-weight:700;font-size:12px}
+.badge-open{background:#fff7e6;color:#9b6b00;border:1px solid #ffd27a}
+.badge-win{background:#e7f7ec;color:#0d6a2d;border:1px solid #b7e2c5}
+.badge-loss{background:#ffebee;color:#8a0f1b;border:1px solid #ffcdd2}
+
+/* Address box */
+.address-box{display:flex;gap:8px;align-items:center;background:#f7fafc;border:1px dashed #cbd5e1;border-radius:12px;padding:10px 12px;word-break:break-all}
+
+/* Table (admin) */
+.table{width:100%;border-collapse:collapse}
+th,td{padding:10px;border-bottom:1px solid #e7eaf0;text-align:left}
+thead tr{background:#f5f7fa}
+
+/* Toast */
+.toast{
+  position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+  background:#111;color:#fff;padding:10px 14px;border-radius:10px;box-shadow:var(--shadow);z-index:50
+}
+
+/* Utility colors for buttons in markets card on dashboard */
+.btn.market-buy{background:var(--buy);color:#fff}
+.btn.market-sell{background:var(--sell);color:#fff}
