@@ -3,47 +3,99 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>EdgeApp — Settings</title>
-    <link rel="stylesheet" href="style/main.css">
+    <title>PrimeEdgeMarket — Settings</title>
+    <link rel="stylesheet" href="style/modern.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body data-page="settings">
-<header id="appBar" class="appbar">
-    <div class="brand">
-        <div class="logo">PEA</div>
-        <div class="brand-text">
-            <div class="title">PrimeEdgeApp</div>
-            <div class="subtitle">Multi-Trading Platform</div>
+    <header class="dashboard-header">
+        <div class="header-logo">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo">
+            <div class="header-brand">
+                <div class="header-title">PrimeEdgeMarket</div>
+                <div class="header-subtitle">Multi Trading Platform</div>
+            </div>
         </div>
-    </div>
-    <nav class="nav">
-        <a class="btn ghost" href="dashboard.html">Dashboard</a>
-        <a class="btn ghost" href="deposit.html">Deposit</a>
-        <a class="btn ghost" href="withdraw.html">Withdraw</a>
-        <a class="btn ghost" href="settings.html">Settings</a>
-        <a id="adminLink" class="btn ghost hidden" href="admin.html">Admin</a>
-        <button id="logoutBtn" class="btn danger">Logout</button>
+        <nav class="nav">
+            <a class="btn ghost" href="dashboard.html">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <a class="btn ghost" href="deposit.html">
+                <i class="fas fa-wallet"></i> Deposit
+            </a>
+            <a class="btn ghost" href="withdraw.html">
+                <i class="fas fa-money-bill-transfer"></i> Withdraw
+            </a>
+            <a class="btn ghost active" href="settings.html">
+                <i class="fas fa-gear"></i> Settings
+            </a>
+            <a id="adminLink" class="btn ghost hidden" href="admin.html">
+                <i class="fas fa-shield"></i> Admin
+            </a>
+            <button id="logoutBtn" class="btn danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </nav>
+    </header>
+
+    <main class="container narrow">
+        <h2 class="section-title">
+            <i class="fas fa-gear"></i> Account Settings
+        </h2>
+        <div class="card lift">
+            <h3 class="card-title">
+                <i class="fas fa-user-circle"></i> Profile Information
+            </h3>
+            <div class="profile-grid">
+                <div class="profile-item">
+                    <label class="profile-label">
+                        <i class="fas fa-user"></i> Name
+                    </label>
+                    <div id="profileName" class="profile-value">—</div>
+                </div>
+                <div class="profile-item">
+                    <label class="profile-label">
+                        <i class="fas fa-envelope"></i> Email
+                    </label>
+                    <div id="profileEmail" class="profile-value">—</div>
+                </div>
+            </div>
+            <hr class="divider" />
+            <p class="hint">
+                <i class="fas fa-info-circle"></i> Local demo only — data saved on your device
+            </p>
+        </div>
+
+        <div class="card lift">
+            <h3 class="card-title">
+                <i class="fas fa-shield-alt"></i> Security Settings
+            </h3>
+            <button class="btn ghost">
+                <i class="fas fa-key"></i> Change Password
+            </button>
+            <button class="btn ghost">
+                <i class="fas fa-lock"></i> Two-Factor Authentication
+            </button>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a class="btn ghost" href="dashboard.html">
+            <i class="fas fa-chart-bar"></i>
+            <span>Dashboard</span>
+        </a>
+        <a class="btn ghost" href="deposit.html">
+            <i class="fas fa-wallet"></i>
+            <span>Deposit</span>
+        </a>
+        <a class="btn ghost" href="withdraw.html">
+            <i class="fas fa-money-bill-transfer"></i>
+            <span>Withdraw</span>
+        </a>
     </nav>
-</header>
 
-<main class="container narrow">
-    <h2 class="section-title">Account Settings</h2>
-    <div class="card lift">
-        <div class="profile" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-                <div class="label">Name</div>
-                <div id="profileName" class="value">—</div>
-            </div>
-            <div>
-                <div class="label">Email</div>
-                <div id="profileEmail" class="value">—</div>
-            </div>
-        </div>
-        <hr />
-        <p class="hint">Local demo only — data saved on your device.</p>
-    </div>
-</main>
-
-<div id="toast" class="toast hidden"></div>
-<script src="app.js"></script>
+    <div id="toast" class="toast hidden"></div>
+    <script src="app.js"></script>
 </body>
 </html>

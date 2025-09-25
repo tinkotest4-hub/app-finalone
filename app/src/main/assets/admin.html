@@ -8,6 +8,13 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="script/app.js" defer></script>
+    <script src="js/auth-check.js" defer></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            checkAdminAccess('admin');
+        });
+    </script>
     <style>
         :root {
             --primary-blue: #007AFF;
@@ -36,19 +43,17 @@
             background-color: var(--background-dark);
             color: var(--text-light);
             font-family: 'Poppins', sans-serif;
+            display: flex;
         }
     </style>
 </head>
 <body data-page="admin" class="admin-page">
-    <header id="appBar" class="appbar">
+    <div class="sidebar">
         <div class="brand">
-            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo" class="admin-logo">
-            <div class="brand-text">
-                <div class="title">PrimeEdgeMarket</div>
-                <div class="subtitle">Admin Dashboard</div>
-            </div>
+            <span class="brand-text">PrimeEdgeMarket</span>
+            <span class="subtitle">Admin Dashboard</span>
         </div>
-        <nav class="nav">
+        <nav class="nav-menu">
             <button class="nav-btn active" data-tab="users">
                 <span class="nav-icon">👥</span>
                 Users
@@ -61,35 +66,108 @@
                 <span class="nav-icon">📤</span>
                 Withdrawals
             </button>
-            <button id="logoutBtn" class="btn-logout">Logout</button>
         </nav>
-    </header>
+        <button id="logoutBtn" class="btn-logout">Logout</button>
+    </div>
 
-    <main class="admin-container">
-        <div class="admin-header">
-            <h1 class="admin-title">User Management</h1>
-            <div class="stats-container">
-                <div class="stat-card">
-                    <div class="stat-label">Total Users</div>
-                    <div class="stat-value" id="totalUsers">0</div>
+    <div class="main-content">
+        <div id="users-panel" class="panel active">
+            <div class="admin-header">
+                <h1 class="page-title">User Management</h1>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Users</div>
+                        <div class="stat-value" id="totalUsers">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Today</div>
+                        <div class="stat-value" id="activeUsers">0</div>
+                    </div>
                 </div>
-                <div class="stat-card">
-                    <div class="stat-label">New Today</div>
-                    <div class="stat-value" id="newUsers">0</div>
+            </div>
+
+            <div class="content-card">
+                <div class="table-header">
+                    <div>Name</div>
+                    <div>Email</div>
+                    <div>Role</div>
+                    <div>Status</div>
+                    <div>Balance</div>
+                    <div>Last Active</div>
+                    <div>Actions</div>
+                </div>
+                <div id="users-table" class="table-body">
+                    <!-- Users will be added here dynamically -->
                 </div>
             </div>
         </div>
 
-        <div class="users-container card">
-            <div class="table-header">
-                <div>Full Name</div>
-                <div>Email</div>
-                <div>Username</div>
-                <div>Phone</div>
-                <div>Country</div>
-                <div>Referral</div>
-                <div>Status</div>
-                <div>Registered</div>
+        <div id="deposits-panel" class="panel">
+            <div class="admin-header">
+                <h1 class="page-title">Deposit Requests</h1>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Deposits</div>
+                        <div class="stat-value" id="totalDeposits">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Amount</div>
+                        <div class="stat-value" id="pendingDeposits">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="table-header">
+                    <div>User</div>
+                    <div>Amount</div>
+                    <div>Method</div>
+                    <div>Status</div>
+                    <div>Date</div>
+                    <div>Reference</div>
+                    <div>Actions</div>
+                </div>
+                <div id="deposits-table" class="table-body">
+                    <!-- Deposits will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div id="withdrawals-panel" class="panel">
+            <div class="admin-header">
+                <h1 class="page-title">Withdrawal Requests</h1>
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-label">Total Withdrawals</div>
+                        <div class="stat-value" id="totalWithdrawals">$0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Pending Amount</div>
+                        <div class="stat-value" id="pendingWithdrawals">$0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-card">
+                <div class="table-header">
+                    <div>User</div>
+                    <div>Amount</div>
+                    <div>Method</div>
+                    <div>Status</div>
+                    <div>Date</div>
+                    <div>Reference</div>
+                    <div>Actions</div>
+                </div>
+                <div id="withdrawals-table" class="table-body">
+                    <!-- Withdrawals will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">
+        <span class="toast-message"></span>
+    </div>
             </div>
             <div class="users-list" id="usersList">
                 <!-- User entries will be dynamically added here -->
@@ -111,21 +189,48 @@
             background: var(--card-dark);
             border-bottom: 1px solid var(--border-color);
             padding: 1rem 2rem;
-        }
-
-        .admin-logo {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            margin-right: 1rem;
-        }
-
-        .brand {
             display: flex;
+            justify-content: space-between;
             align-items: center;
         }
 
-        .brand-text .title {
+        .appbar .brand {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .appbar .brand .title {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .appbar .status {
+            color: var(--success-green);
+            font-size: 0.8rem;
+            margin-top: 0.2rem;
+        }
+
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 250px;
+            background: var(--card-dark);
+            border-right: 1px solid var(--border-color);
+            padding: 2rem 1rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar .brand {
+            display: flex;
+            flex-direction: column;
+            padding: 0 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .sidebar .brand-text {
             font-family: 'Montserrat', sans-serif;
             font-weight: 700;
             font-size: 1.2rem;
@@ -135,9 +240,18 @@
             -webkit-text-fill-color: transparent;
         }
 
-        .brand-text .subtitle {
+        .sidebar .subtitle {
             font-size: 0.8rem;
             color: var(--text-grey);
+            margin-top: 0.2rem;
+        }
+
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            flex-grow: 1;
+            margin-bottom: 1rem;
         }
 
         .nav {
@@ -183,7 +297,8 @@
         .admin-container {
             padding: 2rem;
             max-width: 1400px;
-            margin: 0 auto;
+            margin-left: 250px;
+            margin-right: auto;
         }
 
         .admin-header {
@@ -314,89 +429,712 @@
                 display: none;
             }
         }
+
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1.5rem;
+            background: var(--card-dark);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-light);
+            z-index: 1000;
+            transition: all 0.3s ease;
+            max-width: 400px;
+            white-space: pre-line;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+
+        #toast.hidden {
+            opacity: 0;
+            transform: translateY(20px);
+            pointer-events: none;
+        }
+
+        .panel {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .loading {
+            position: relative;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .loading::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 24px;
+            height: 24px;
+            margin: -12px 0 0 -12px;
+            border: 2px solid var(--primary-blue);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .table-row {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .table-row::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 100%;
+            background: var(--primary-blue);
+            opacity: 0.1;
+            transition: width 0.3s ease;
+        }
+
+        .table-row:hover::before {
+            width: 100%;
+        }
+
+        .nav-btn[onclick] {
+            min-width: 100px;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn[onclick]:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
 
     <script>
-        // Keep track of registered users
-        let users = [];
-        let todayUsers = 0;
-        const usersList = document.getElementById('usersList');
-        const totalUsersElement = document.getElementById('totalUsers');
-        const newUsersElement = document.getElementById('newUsers');
+        // Force initialize demo accounts to ensure they exist
+        (function initializeDemoAccounts() {
+            let users = Store.getUsers();
+            const demoId = 'demo123';
+            const adminId = 'admin123';
 
-        // Function to add a new user to the list
-        function addUser(userData) {
-            users.push(userData);
-            todayUsers++;
-            
-            updateStats();
-            renderUser(userData);
-        }
-
-        // Update statistics
-        function updateStats() {
-            totalUsersElement.textContent = users.length;
-            newUsersElement.textContent = todayUsers;
-        }
-
-        // Render a user in the list
-        function renderUser(userData) {
-            const userElement = document.createElement('div');
-            userElement.className = 'user-item new';
-            
-            const date = new Date().toLocaleString();
-            
-            userElement.innerHTML = `
-                <div>${userData.fullName}</div>
-                <div>${userData.email}</div>
-                <div>${userData.username}</div>
-                <div>${userData.phone}</div>
-                <div>${userData.country}</div>
-                <div>${userData.referralCode || 'N/A'}</div>
-                <div><span class="status-badge active">Active</span></div>
-                <div>${date}</div>
-            `;
-
-            usersList.insertBefore(userElement, usersList.firstChild);
-
-            // Remove the highlight after animation
-            setTimeout(() => {
-                userElement.classList.remove('new');
-            }, 2000);
-        }
-
-        // Listen for new registrations
-        window.addEventListener('message', function(event) {
-            if (event.data.type === 'registration') {
-                addUser(event.data.data);
-                showToast('New user registered!');
+            // Add demo account if not exists
+            if (!users.find(u => u.id === demoId)) {
+                const demoUser = {
+                    id: demoId,
+                    name: "Demo User",
+                    email: "demo@primeedge.com",
+                    password: "demo123",
+                    role: "user",
+                    createdAt: Date.now()
+                };
+                users.push(demoUser);
+                Store.setBalances(demoId, {
+                    total: 20000,
+                    deposit: 10000,
+                    trading: 10000,
+                    locked: 0
+                });
             }
-        });
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const toastMessage = toast.querySelector('.toast-message');
-            toastMessage.textContent = message;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
+            // Add admin account if not exists
+            if (!users.find(u => u.id === adminId)) {
+                const adminUser = {
+                    id: adminId,
+                    name: "Admin",
+                    email: "admin@primeedge.com",
+                    password: "admin123",
+                    role: "admin",
+                    createdAt: Date.now()
+                };
+                users.push(adminUser);
+                Store.setBalances(adminId, {
+                    total: 100000,
+                    deposit: 50000,
+                    trading: 50000,
+                    locked: 0
+                });
+            }
+
+            Store.setUsers(users);
+
+            // Add sample transactions for demo
+            const demoDeposits = Store.getDeposits(demoId);
+            if (demoDeposits.length === 0) {
+                Store.setDeposits(demoId, [{
+                    id: 'dep1',
+                    amount: 5000,
+                    status: 'completed',
+                    timestamp: Date.now() - 86400000
+                }, {
+                    id: 'dep2',
+                    amount: 3000,
+                    status: 'pending',
+                    timestamp: Date.now()
+                }]);
+            }
+
+            const demoWithdrawals = Store.getWithdrawals(demoId);
+            if (demoWithdrawals.length === 0) {
+                Store.setWithdrawals(demoId, [{
+                    id: 'with1',
+                    amount: 1000,
+                    status: 'completed',
+                    timestamp: Date.now() - 43200000
+                }, {
+                    id: 'with2',
+                    amount: 2000,
+                    status: 'pending',
+                    timestamp: Date.now()
+                }]);
+            }
+        })();
+
+        // Check admin authentication
+        if (!Store.isLoggedIn()) {
+            navigate('login.html');
         }
+        const session = Store.getSession();
+        if (!session || session.userType !== 'admin') {
+            Store.clearSession();
+            navigate('login.html');
+        }
+
+        // Initialize UI elements
+        const panels = {
+            users: document.getElementById('users-panel'),
+            deposits: document.getElementById('deposits-panel'),
+            withdrawals: document.getElementById('withdrawals-panel')
+        };
+
+        const tables = {
+            users: document.getElementById('users-table'),
+            deposits: document.getElementById('deposits-table'),
+            withdrawals: document.getElementById('withdrawals-table')
+        };
+
+        const stats = {
+            totalUsers: document.getElementById('totalUsers'),
+            activeUsers: document.getElementById('activeUsers'),
+            totalDeposits: document.getElementById('totalDeposits'),
+            pendingDeposits: document.getElementById('pendingDeposits'),
+            totalWithdrawals: document.getElementById('totalWithdrawals'),
+            pendingWithdrawals: document.getElementById('pendingWithdrawals')
+        };
 
         // Handle navigation
-        document.querySelectorAll('.nav-btn').forEach(btn => {
+        document.querySelectorAll('.nav-btn[data-tab]').forEach(btn => {
             btn.addEventListener('click', function() {
+                const tab = this.dataset.tab;
+                
+                // Update buttons
                 document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
                 this.classList.add('active');
-                // Handle tab switching here
+                
+                // Update panels
+                Object.values(panels).forEach(panel => panel.classList.remove('active'));
+                panels[tab].classList.add('active');
+
+                // Refresh data for the active panel
+                refreshData(tab);
             });
         });
 
         // Handle logout
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            // Add logout logic here
-            window.location.href = 'login.html';
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            Store.clearSession();
         });
+
+        // Data refresh functions
+        async function refreshData(tab = 'users') {
+            const panel = panels[tab];
+            if (!panel) return;
+
+            try {
+                // Show loading state
+                panel.classList.add('loading');
+
+                // Small delay to ensure UI updates
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                switch(tab) {
+                    case 'users':
+                        await refreshUsers();
+                        break;
+                    case 'deposits':
+                        await refreshDeposits();
+                        break;
+                    case 'withdrawals':
+                        await refreshWithdrawals();
+                        break;
+                }
+
+                // Flash the panel to indicate update
+                panel.style.animation = 'none';
+                panel.offsetHeight; // Trigger reflow
+                panel.style.animation = null;
+
+            } catch (error) {
+                console.error('Error refreshing data:', error);
+                toast('Error updating data. Please try again.');
+            } finally {
+                // Remove loading state
+                panel.classList.remove('loading');
+            }
+        }
+
+        function refreshUsers() {
+            const users = Store.getUsers();
+            
+            // Clear and rebuild users table
+            tables.users.innerHTML = '';
+            
+            // Track active users (those with recent activity)
+            let activeCount = 0;
+            const now = Date.now();
+            const ONE_HOUR = 60 * 60 * 1000;
+            
+            users.forEach(user => {
+                const balances = Store.getBalances(user.id);
+                const deposits = Store.getDeposits(user.id);
+                const withdrawals = Store.getWithdrawals(user.id);
+                
+                // Check for recent activity
+                const lastDeposit = deposits.length > 0 ? Math.max(...deposits.map(d => d.timestamp)) : 0;
+                const lastWithdrawal = withdrawals.length > 0 ? Math.max(...withdrawals.map(w => w.timestamp)) : 0;
+                const lastActivity = Math.max(lastDeposit, lastWithdrawal, user.createdAt || 0);
+                
+                if (now - lastActivity < ONE_HOUR) {
+                    activeCount++;
+                }
+                
+                const row = document.createElement('div');
+                row.className = 'table-row';
+                row.innerHTML = `
+                    <div>${user.name}</div>
+                    <div>${user.email}</div>
+                    <div>${user.role}</div>
+                    <div><span class="status-badge ${now - lastActivity < ONE_HOUR ? 'active' : 'pending'}">
+                        ${now - lastActivity < ONE_HOUR ? 'Active' : 'Inactive'}
+                    </span></div>
+                    <div>$${balances.total.toFixed(2)}</div>
+                    <div>${new Date(lastActivity).toLocaleString()}</div>
+                    <div>
+                        <button class="nav-btn" onclick="viewUser('${user.id}')">View Details</button>
+                    </div>
+                `;
+                tables.users.appendChild(row);
+            });
+            
+            stats.totalUsers.textContent = users.length;
+            stats.activeUsers.textContent = activeCount;
+        }
+
+        function refreshDeposits() {
+            let totalDeposits = 0;
+            let pendingDeposits = 0;
+            const users = Store.getUsers();
+            
+            // Clear and rebuild deposits table
+            tables.deposits.innerHTML = '';
+            
+            // Collect all deposits across users
+            let allDeposits = [];
+            users.forEach(user => {
+                const deposits = Store.getDeposits(user.id);
+                deposits.forEach(deposit => {
+                    allDeposits.push({
+                        ...deposit,
+                        user: user
+                    });
+                });
+            });
+            
+            // Sort deposits by timestamp (newest first)
+            allDeposits.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Display deposits
+            allDeposits.forEach(deposit => {
+                totalDeposits += deposit.amount;
+                if (deposit.status === 'pending') {
+                    pendingDeposits += deposit.amount;
+                }
+
+                const row = document.createElement('div');
+                row.className = 'table-row';
+                const isPending = deposit.status === 'pending';
+                
+                row.innerHTML = `
+                    <div>${deposit.user.name}</div>
+                    <div>$${deposit.amount.toFixed(2)}</div>
+                    <div>Bank Transfer</div>
+                    <div><span class="status-badge ${deposit.status}">${deposit.status}</span></div>
+                    <div>${new Date(deposit.timestamp).toLocaleString()}</div>
+                    <div>${deposit.id}</div>
+                    <div>
+                        ${isPending ? `
+                            <button class="nav-btn" style="background: var(--success-green);" 
+                                onclick="approveDeposit('${deposit.user.id}', '${deposit.id}')">
+                                Approve Now
+                            </button>
+                        ` : `
+                            <button class="nav-btn" onclick="viewDeposit('${deposit.user.id}', '${deposit.id}')">
+                                View Details
+                            </button>
+                        `}
+                    </div>
+                `;
+                
+                if (isPending) {
+                    row.style.background = 'rgba(16, 185, 129, 0.1)';
+                }
+                
+                tables.deposits.appendChild(row);
+            });
+
+            // Update stats
+            stats.totalDeposits.textContent = `$${totalDeposits.toFixed(2)}`;
+            stats.pendingDeposits.textContent = `$${pendingDeposits.toFixed(2)}`;
+            
+            // Add no-data message if needed
+            if (allDeposits.length === 0) {
+                const noData = document.createElement('div');
+                noData.className = 'table-row';
+                noData.style.textAlign = 'center';
+                noData.style.color = 'var(--text-grey)';
+                noData.innerHTML = 'No deposits found';
+                tables.deposits.appendChild(noData);
+            }
+        }
+
+        function refreshWithdrawals() {
+            let totalWithdrawals = 0;
+            let pendingWithdrawals = 0;
+            const users = Store.getUsers();
+            
+            // Clear and rebuild withdrawals table
+            tables.withdrawals.innerHTML = '';
+            
+            // Collect all withdrawals across users
+            let allWithdrawals = [];
+            users.forEach(user => {
+                const withdrawals = Store.getWithdrawals(user.id);
+                withdrawals.forEach(withdrawal => {
+                    allWithdrawals.push({
+                        ...withdrawal,
+                        user: user
+                    });
+                });
+            });
+            
+            // Sort withdrawals by timestamp (newest first)
+            allWithdrawals.sort((a, b) => b.timestamp - a.timestamp);
+            
+            // Display withdrawals
+            allWithdrawals.forEach(withdrawal => {
+                totalWithdrawals += withdrawal.amount;
+                if (withdrawal.status === 'pending') {
+                    pendingWithdrawals += withdrawal.amount;
+                }
+
+                const row = document.createElement('div');
+                row.className = 'table-row';
+                const isPending = withdrawal.status === 'pending';
+                
+                row.innerHTML = `
+                    <div>${withdrawal.user.name}</div>
+                    <div>$${withdrawal.amount.toFixed(2)}</div>
+                    <div>Bank Transfer</div>
+                    <div><span class="status-badge ${withdrawal.status}">${withdrawal.status}</span></div>
+                    <div>${new Date(withdrawal.timestamp).toLocaleString()}</div>
+                    <div>${withdrawal.id}</div>
+                    <div>
+                        ${isPending ? `
+                            <button class="nav-btn" style="background: var(--warning-yellow);" 
+                                onclick="approveWithdrawal('${withdrawal.user.id}', '${withdrawal.id}')">
+                                Approve Now
+                            </button>
+                        ` : `
+                            <button class="nav-btn" onclick="viewWithdrawal('${withdrawal.user.id}', '${withdrawal.id}')">
+                                View Details
+                            </button>
+                        `}
+                    </div>
+                `;
+                
+                if (isPending) {
+                    row.style.background = 'rgba(245, 158, 11, 0.1)';
+                }
+                
+                tables.withdrawals.appendChild(row);
+            });
+
+            // Update stats
+            stats.totalWithdrawals.textContent = `$${totalWithdrawals.toFixed(2)}`;
+            stats.pendingWithdrawals.textContent = `$${pendingWithdrawals.toFixed(2)}`;
+            
+            // Add no-data message if needed
+            if (allWithdrawals.length === 0) {
+                const noData = document.createElement('div');
+                noData.className = 'table-row';
+                noData.style.textAlign = 'center';
+                noData.style.color = 'var(--text-grey)';
+                noData.innerHTML = 'No withdrawals found';
+                tables.withdrawals.appendChild(noData);
+            }
+        }
+
+        // Action handlers
+        function viewUser(userId) {
+            const user = Store.getUsers().find(u => u.id === userId);
+            if (user) {
+                const balances = Store.getBalances(user.id);
+                const deposits = Store.getDeposits(user.id);
+                const withdrawals = Store.getWithdrawals(user.id);
+                
+                const details = `
+                    Name: ${user.name}
+                    Email: ${user.email}
+                    Role: ${user.role}
+                    Total Balance: $${balances.total.toFixed(2)}
+                    Deposits: ${deposits.length} (${deposits.filter(d => d.status === 'pending').length} pending)
+                    Withdrawals: ${withdrawals.length} (${withdrawals.filter(w => w.status === 'pending').length} pending)
+                    Account Created: ${new Date(user.createdAt).toLocaleString()}
+                `;
+                
+                toast(details);
+            }
+        }
+
+        function viewDeposit(userId, depositId) {
+            const user = Store.getUsers().find(u => u.id === userId);
+            if (user) {
+                const deposits = Store.getDeposits(userId);
+                const deposit = deposits.find(d => d.id === depositId);
+                if (deposit) {
+                    const details = `
+                        User: ${user.name}
+                        Amount: $${deposit.amount.toFixed(2)}
+                        Status: ${deposit.status}
+                        Date: ${new Date(deposit.timestamp).toLocaleString()}
+                        Reference: ${deposit.id}
+                    `;
+                    toast(details);
+                }
+            }
+        }
+
+        function viewWithdrawal(userId, withdrawalId) {
+            const user = Store.getUsers().find(u => u.id === userId);
+            if (user) {
+                const withdrawals = Store.getWithdrawals(userId);
+                const withdrawal = withdrawals.find(w => w.id === withdrawalId);
+                if (withdrawal) {
+                    const details = `
+                        User: ${user.name}
+                        Amount: $${withdrawal.amount.toFixed(2)}
+                        Status: ${withdrawal.status}
+                        Date: ${new Date(withdrawal.timestamp).toLocaleString()}
+                        Reference: ${withdrawal.id}
+                    `;
+                    toast(details);
+                }
+            }
+        }
+
+        function approveDeposit(userId, depositId) {
+            const user = Store.getUsers().find(u => u.id === userId);
+            if (user) {
+                const deposits = Store.getDeposits(userId);
+                const deposit = deposits.find(d => d.id === depositId);
+                if (deposit && deposit.status === 'pending') {
+                    deposit.status = 'completed';
+                    Store.setDeposits(userId, deposits);
+                    
+                    // Update user's balance
+                    const balances = Store.getBalances(userId);
+                    balances.deposit += deposit.amount;
+                    balances.total = balances.deposit + balances.trading;
+                    Store.setBalances(userId, balances);
+                    
+                    refreshDeposits();
+                    refreshUsers(); // Update user balances display
+                    toast(`Successfully approved $${deposit.amount.toFixed(2)} deposit for ${user.name}`);
+                }
+            }
+        }
+
+        function approveWithdrawal(userId, withdrawalId) {
+            const user = Store.getUsers().find(u => u.id === userId);
+            if (user) {
+                const withdrawals = Store.getWithdrawals(userId);
+                const withdrawal = withdrawals.find(w => w.id === withdrawalId);
+                if (withdrawal && withdrawal.status === 'pending') {
+                    // Check if user has sufficient balance
+                    const balances = Store.getBalances(userId);
+                    if (balances.deposit < withdrawal.amount) {
+                        toast(`Error: Insufficient balance for withdrawal`);
+                        return;
+                    }
+                    
+                    withdrawal.status = 'completed';
+                    Store.setWithdrawals(userId, withdrawals);
+                    
+                    // Update user's balance
+                    balances.deposit -= withdrawal.amount;
+                    balances.total = balances.deposit + balances.trading;
+                    Store.setBalances(userId, balances);
+                    
+                    refreshWithdrawals();
+                    refreshUsers(); // Update user balances display
+                    toast(`Successfully approved $${withdrawal.amount.toFixed(2)} withdrawal for ${user.name}`);
+                }
+            }
+        }
+
+        // Enhanced toast system with queuing
+        const toastQueue = [];
+        let isToastActive = false;
+
+        function toast(message, duration = 3000) {
+            toastQueue.push({ message, duration });
+            if (!isToastActive) {
+                showNextToast();
+            }
+        }
+
+        function showNextToast() {
+            if (toastQueue.length === 0) {
+                isToastActive = false;
+                return;
+            }
+
+            isToastActive = true;
+            const { message, duration } = toastQueue.shift();
+            const toast = document.getElementById('toast');
+            const toastMessage = toast.querySelector('.toast-message');
+
+            // Format message if it contains newlines
+            const formattedMessage = message.trim().split('\n').map(line => line.trim()).join('\n');
+            toastMessage.textContent = formattedMessage;
+
+            // Show toast
+            toast.classList.remove('hidden');
+            
+            // Hide after duration
+            setTimeout(() => {
+                toast.classList.add('hidden');
+                // Wait for hide animation
+                setTimeout(() => {
+                    showNextToast();
+                }, 300);
+            }, duration);
+        }
+
+        // Set up real-time updates
+        let updateInterval;
+        function startUpdates() {
+            // Initial load
+            refreshData('users');
+            
+            // Set up periodic refresh every 5 seconds
+            updateInterval = setInterval(() => {
+                const activeTab = document.querySelector('.nav-btn[data-tab].active');
+                if (activeTab) {
+                    refreshData(activeTab.dataset.tab);
+                }
+            }, 5000);
+        }
+
+        // Handle connection status
+        let isOnline = true;
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
+
+        window.addEventListener('online', () => {
+            isOnline = true;
+            toast('Connection restored. Resuming updates...');
+            startUpdates();
+        });
+
+        window.addEventListener('offline', () => {
+            isOnline = false;
+            toast('Connection lost. Updates paused.');
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+
+        // Enhanced error handling for updates
+        async function safeRefresh() {
+            try {
+                const activeTab = document.querySelector('.nav-btn[data-tab].active');
+                if (activeTab && isOnline) {
+                    await refreshData(activeTab.dataset.tab);
+                    retryCount = 0; // Reset retry count on success
+                }
+            } catch (error) {
+                console.error('Error during refresh:', error);
+                retryCount++;
+                
+                if (retryCount >= MAX_RETRIES) {
+                    toast('Multiple update failures. Please refresh the page.');
+                    if (updateInterval) {
+                        clearInterval(updateInterval);
+                    }
+                } else {
+                    toast('Update failed. Retrying...');
+                }
+            }
+        }
+
+        // Start real-time updates when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initial load with pre-seeded data
+            initializeDemoAccounts();
+            startUpdates();
+
+            // Add keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'r' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    safeRefresh();
+                }
+            });
+        });
+
+        // Clean up when leaving the page
+        window.addEventListener('beforeunload', () => {
+            if (updateInterval) {
+                clearInterval(updateInterval);
+            }
+        });
+
+        // Periodically check and recover from stale state
+        setInterval(() => {
+            const activeTab = document.querySelector('.nav-btn[data-tab].active');
+            const activePanel = document.querySelector('.panel.active');
+            
+            // Recover from inconsistent state
+            if (activeTab && (!activePanel || activePanel.id !== `${activeTab.dataset.tab}-panel`)) {
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                panels[activeTab.dataset.tab]?.classList.add('active');
+                refreshData(activeTab.dataset.tab);
+            }
+        }, 10000);
     </script>
 </body>
 </html>

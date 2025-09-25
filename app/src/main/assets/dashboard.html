@@ -5,12 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>PrimeEdgeMarket — Dashboard</title>
     <link rel="stylesheet" href="style/main.css" />
+    <link rel="stylesheet" href="style/modern.css" />
     <link rel="stylesheet" href="style/dashboard.css" />
+    <link rel="stylesheet" href="style/dashboard-enhanced.css" />
     <link rel="stylesheet" href="style/trading.css" />
+    <link rel="stylesheet" href="style/dark-theme-override.css" />
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body data-page="dashboard">
     <!-- Header -->
@@ -102,11 +106,80 @@
         </div>
 
         <!-- Trade History -->
-        <div class="card">
-            <h3 class="card-title">Trade History</h3>
-            <div id="tradesList" class="trades"></div>
+        <div class="trade-history-section">
+            <div class="trade-history-header">
+                <h3 class="trade-history-title">Trade History</h3>
+                <div class="trade-history-filter">
+                    <button class="filter-btn active" data-filter="all">All</button>
+                    <button class="filter-btn" data-filter="buy">Buy</button>
+                    <button class="filter-btn" data-filter="sell">Sell</button>
+                </div>
+            </div>
+            <div class="trade-history-list dark-theme" id="tradesList">
+                <!-- Trade items will be dynamically added here -->
+            </div>
         </div>
     </main>
+
+    <style>
+        /* Immediate trade history fixes */
+        .dark-theme {
+            background-color: #0f172a !important;
+            color: #e2e8f0 !important;
+        }
+        
+        .trade-history-section {
+            background-color: #0f172a !important;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .trade-history-header {
+            background-color: #1e293b !important;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+        }
+        
+        .trade-history-list {
+            background-color: #0f172a !important;
+        }
+        
+        .trade-item {
+            background-color: #0f172a !important;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+            padding: 1.25rem;
+            color: #e2e8f0 !important;
+        }
+        
+        .trade-pair {
+            color: #e2e8f0 !important;
+            font-weight: 600;
+        }
+        
+        .trade-amount {
+            color: #94a3b8 !important;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .trade-time {
+            color: #94a3b8 !important;
+            font-size: 0.875rem;
+        }
+        
+        .trade-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .trade-status.win {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981 !important;
+        }
+        
+        .trade-status.loss {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444 !important;
+        }
+    </style>
 
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
@@ -138,14 +211,14 @@
             </svg>
             <span class="nav-label">Settings</span>
         </a>
-        <a href="#" class="nav-item" id="logoutNavBtn">
+        <button class="nav-item" id="logoutBtn" onclick="Store.clearSession(); navigate('login.html');">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
                 <polyline points="16 17 21 12 16 7" />
                 <line x1="21" y1="12" x2="9" y2="12" />
             </svg>
             <span class="nav-label">Logout</span>
-        </a>
+        </button>
     </nav>
 
     <div id="toast" class="toast hidden">
@@ -153,5 +226,6 @@
     </div>
 
     <script src="app.js"></script>
+    <script src="script/trade-history.js"></script>
 </body>
 </html>

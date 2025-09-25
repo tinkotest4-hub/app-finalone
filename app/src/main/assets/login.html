@@ -21,6 +21,12 @@
         <div class="auth-card">
             <h2 class="welcome-title">Welcome Back</h2>
             <p class="welcome-subtitle">Sign in to your account</p>
+            <div class="demo-info" style="margin-bottom: 15px; font-size: 0.9em; color: #666;">
+                Demo Accounts:<br>
+                - Super Admin: superadmin@primeedge.com / superadmin123<br>
+                - Admin: admin@primeedge.com / admin123<br>
+                - Demo User: demo@primeedge.com / demo123
+            </div>
 
             <div class="tab-container">
                 <button class="tab-btn active">Login</button>
@@ -96,7 +102,13 @@
                 toast('Login successful!');
                 setTimeout(() => {
                     // Use the navigate helper for consistent navigation
-                    navigate(result.userType === 'admin' ? 'admin.html' : 'dashboard.html');
+                    if (result.userType === 'superadmin') {
+                        navigate('superadmin.html');
+                    } else if (result.userType === 'admin') {
+                        navigate('admin.html');
+                    } else {
+                        navigate('dashboard.html');
+                    }
                 }, 1000);
             } else {
                 toast(result.error);

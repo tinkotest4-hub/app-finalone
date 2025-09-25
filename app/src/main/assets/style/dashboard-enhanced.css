@@ -48,6 +48,177 @@ body {
   letter-spacing: 0.02em;
 }
 
+/* Enhanced Trade History Styles */
+.trade-history-section {
+  background: var(--card-dark);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-top: 2rem;
+}
+
+.trade-history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem;
+  background: rgba(30, 41, 59, 0.5);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.trade-history-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--text-white);
+  letter-spacing: -0.02em;
+}
+
+.trade-history-filter {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.filter-btn {
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  background: rgba(30, 41, 59, 0.4);
+  color: var(--text-grey);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-btn:hover {
+  background: rgba(30, 41, 59, 0.6);
+  color: var(--text-white);
+}
+
+.filter-btn.active {
+  background: var(--primary-blue);
+  color: white;
+  border-color: var(--primary-blue);
+}
+
+.trade-history-list {
+  padding: 0.5rem 0;
+  max-height: 400px;
+  overflow-y: auto;
+  background: var(--card-dark);
+}
+
+.trade-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.2s ease;
+}
+
+.trade-item:last-child {
+  border-bottom: none;
+}
+
+.trade-item:hover {
+  background: rgba(30, 41, 59, 0.3);
+}
+
+.trade-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.trade-pair {
+  font-weight: 600;
+  color: var(--text-white);
+  font-size: 0.9375rem;
+  letter-spacing: -0.02em;
+}
+
+.trade-time {
+  color: var(--text-grey);
+  font-size: 0.8125rem;
+}
+
+.trade-details {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.trade-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9375rem;
+  font-weight: 600;
+}
+
+.trade-profit {
+  color: var(--success-green);
+}
+
+.trade-loss {
+  color: var(--danger-red);
+}
+
+.trade-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+.trade-type.buy {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success-green);
+}
+
+.trade-type.sell {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-red);
+}
+
+/* Empty state */
+.no-trades {
+  padding: 3rem 1.5rem;
+  text-align: center;
+  color: var(--text-grey);
+  background: var(--card-dark);
+}
+
+.no-trades-icon {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  opacity: 0.5;
+}
+
+.no-trades-text {
+  font-size: 0.9375rem;
+  font-weight: 500;
+}
+
+/* Scrollbar styling */
+.trade-history-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trade-history-list::-webkit-scrollbar-track {
+  background: rgba(30, 41, 59, 0.2);
+}
+
+.trade-history-list::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 3px;
+}
+
+.trade-history-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.3);
+}
+
 .trade-input, .trade-select {
   width: 100%;
   background: rgba(30, 41, 59, 0.4);

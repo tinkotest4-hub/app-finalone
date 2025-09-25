@@ -3,67 +3,228 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-    <title>EdgeApp — Deposit</title>
-    <link rel="stylesheet" href="style/main.css">
+    <title>PrimeEdgeMarket — Deposit</title>
+    <link rel="stylesheet" href="style/modern.css">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
 <body data-page="deposit">
-<header id="appBar" class="appbar">
-    <div class="brand">
-        <div class="logo">EPA</div>
-        <div class="brand-text">
-            <div class="title">PrimeEdgeApp</div>
-            <div class="subtitle">Multi-Trading Platform</div>
+    <header class="dashboard-header">
+        <div class="header-logo">
+            <img src="logo/logo.jpg" alt="PrimeEdgeMarket Logo">
+            <div class="header-brand">
+                <div class="header-title">PrimeEdgeMarket</div>
+                <div class="header-subtitle">Multi Trading Platform</div>
+            </div>
         </div>
-    </div>
-    <nav class="nav">
-        <a class="btn ghost" href="dashboard.html">Dashboard</a>
-        <a class="btn ghost" href="deposit.html">Deposit</a>
-        <a class="btn ghost" href="withdraw.html">Withdraw</a>
-        <a class="btn ghost" href="settings.html">Settings</a>
-        <a id="adminLink" class="btn ghost hidden" href="admin.html">Admin</a>
-        <button id="logoutBtn" class="btn danger">Logout</button>
+        <nav class="nav">
+            <a class="btn ghost" href="dashboard.html">
+                <i class="fas fa-chart-bar"></i> Dashboard
+            </a>
+            <a class="btn ghost active" href="deposit.html">
+                <i class="fas fa-wallet"></i> Deposit
+            </a>
+            <a class="btn ghost" href="withdraw.html">
+                <i class="fas fa-money-bill-transfer"></i> Withdraw
+            </a>
+            <a class="btn ghost" href="settings.html">
+                <i class="fas fa-gear"></i> Settings
+            </a>
+            <a id="adminLink" class="btn ghost hidden" href="admin.html">
+                <i class="fas fa-shield"></i> Admin
+            </a>
+            <button id="logoutBtn" class="btn danger">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </nav>
+    </header>
+
+    <main class="container narrow">
+        <h2 class="section-title">
+            <i class="fas fa-wallet"></i> Deposit Funds
+        </h2>
+        
+        <div class="card lift">
+            <h3 class="card-title">
+                <i class="fas fa-plus-circle"></i> New Deposit Request
+            </h3>
+            <form id="depositForm" class="form">
+                <div class="form-row">
+                    <label><i class="fas fa-coins"></i> Select Asset</label>
+                    <select id="depositAsset" class="input">
+                        <option value="BTC">Bitcoin (BTC)</option>
+                        <option value="ETH">Ethereum (ETH)</option>
+                        <option value="USDT-TRC20">USDT (TRC20)</option>
+                        <option value="USDC-TRC20">USDC (TRC20)</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label><i class="fas fa-dollar-sign"></i> Amount (USD)</label>
+                    <input type="number" 
+                           id="depositAmount" 
+                           class="input" 
+                           placeholder="Minimum deposit: 10 USD" 
+                           min="10" 
+                           step="10" />
+                </div>
+                <button class="btn solid" type="submit">
+                    <i class="fas fa-paper-plane"></i> Create Deposit Request
+                </button>
+                <div id="depositMsg" class="msg"></div>
+            </form>
+        </div>
+
+        <div id="depositGenerated" class="card lift hidden">
+            <h3 class="card-title">
+                <i class="fas fa-info-circle"></i> Payment Instructions
+            </h3>
+            <div class="instruction-content">
+                <div class="instruction-row">
+                    <span class="instruction-label">Time Remaining:</span>
+                    <b id="depCountdown" class="countdown instruction-value">10:00</b>
+                </div>
+                <div class="instruction-row">
+                    <span class="instruction-label">Selected Asset:</span>
+                    <span id="selectedAsset" class="instruction-value"></span>
+                </div>
+                <div class="instruction-row">
+                    <span class="instruction-label">Amount:</span>
+                    <span id="selectedAmount" class="instruction-value"></span>
+                </div>
+                <div class="address-box">
+                    <div class="address-label">Deposit Address:</div>
+                    <code id="depAddress"></code>
+                    <button id="copyAddrBtn" class="btn ghost">
+                        <i class="fas fa-copy"></i> Copy
+                    </button>
+                </div>
+                <button id="showAddressesBtn" class="btn ghost mt-4">
+                    <i class="fas fa-list"></i> View All Deposit Addresses
+                </button>
+                <p class="hint mt-4">
+                    <i class="fas fa-exclamation-circle"></i> Note: Your balance will be credited after admin approval
+                </p>
+            </div>
+        </div>
+
+        <div class="card lift">
+            <h3 class="card-title">
+                <i class="fas fa-history"></i> Recent Deposits
+            </h3>
+            <div id="myDeposits"></div>
+        </div>
+
+        <!-- Modal for all deposit addresses -->
+        <div id="addressesModal" class="modal hidden">
+            <div class="modal-content card">
+                <div class="modal-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-wallet"></i> Available Deposit Addresses
+                    </h3>
+                    <button class="btn ghost close-modal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="wallet-list">
+                    <div class="wallet-item">
+                        <div class="wallet-header">
+                            <i class="fab fa-bitcoin"></i>
+                            <h4>Bitcoin (BTC)</h4>
+                        </div>
+                        <div class="wallet-content">
+                            <code class="wallet-address">bc1qd7lz35hfw2a4xwm0m9dpptwlc8d0h5r0gckl2s</code>
+                            <button class="btn ghost copy-address">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wallet-item">
+                        <div class="wallet-header">
+                            <i class="fab fa-ethereum"></i>
+                            <h4>Ethereum (ETH/ERC20)</h4>
+                        </div>
+                        <div class="wallet-content">
+                            <code class="wallet-address">0x830D40268601556eA49e824C25C1CcE0bd0976F9</code>
+                            <button class="btn ghost copy-address">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wallet-item">
+                        <div class="wallet-header">
+                            <i class="fas fa-link"></i>
+                            <h4>USDC/USDT (TRC20)</h4>
+                        </div>
+                        <div class="wallet-content">
+                            <code class="wallet-address">TXwZZxyTiskyfzYmcuYJ2HFHnoLo1DJJkv</code>
+                            <button class="btn ghost copy-address">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="wallet-item">
+                        <div class="wallet-header">
+                            <i class="fas fa-coins"></i>
+                            <h4>BNB (BEP20)</h4>
+                        </div>
+                        <div class="wallet-content">
+                            <code class="wallet-address">0x830D40268601556eA49e824C25C1CcE0bd0976F9</code>
+                            <button class="btn ghost copy-address">
+                                <i class="fas fa-copy"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <p class="hint mt-4">
+                    <i class="fas fa-info-circle"></i> Please double-check the address before sending any funds
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <nav class="bottom-nav">
+        <a href="dashboard.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+            </svg>
+            <span class="nav-label">Dashboard</span>
+        </a>
+        <a href="deposit.html" class="nav-item active">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20" />
+            </svg>
+            <span class="nav-label">Deposit</span>
+        </a>
+        <a href="withdraw.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2v20M2 12h20" transform="rotate(45 12 12)" />
+            </svg>
+            <span class="nav-label">Withdraw</span>
+        </a>
+        <a href="settings.html" class="nav-item">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+            <span class="nav-label">Settings</span>
+        </a>
+        <button class="nav-item" id="logoutBtn" onclick="Store.clearSession(); navigate('login.html');">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span class="nav-label">Logout</span>
+        </button>
     </nav>
-</header>
 
-<main class="container narrow">
-    <h2 class="section-title">Deposit Funds</h2>
-    <div class="card lift">
-        <form id="depositForm" class="form">
-            <div class="form-row">
-                <label>Asset</label>
-                <select id="depositAsset" class="input">
-                    <option>BTC</option>
-                    <option>ETH</option>
-                    <option>USDT-TRC20</option>
-                    <option>USDC-TRC20</option>
-                </select>
-            </div>
-            <div class="form-row">
-                <label>Amount (USD)</label>
-                <input type="number" id="depositAmount" class="input" placeholder="Min 10" min="10" step="10" />
-            </div>
-            <button class="btn solid" type="submit">Create Deposit Request</button>
-            <div id="depositMsg" class="msg"></div>
-        </form>
-    </div>
-
-    <div id="depositGenerated" class="card lift hidden">
-        <h3 class="card-title">Payment Instructions</h3>
-        <p class="tiny">Send to the address below within <b id="depCountdown">10:00</b></p>
-        <div class="address-box">
-            <code id="depAddress"></code>
-            <button id="copyAddrBtn" class="btn ghost">Copy</button>
-        </div>
-        <p class="hint">Note — admin must approve to credit your balance.</p>
-    </div>
-
-    <div class="card lift">
-        <h3 class="card-title">Your Deposit Requests</h3>
-        <div id="myDeposits"></div>
-    </div>
-</main>
-
-<div id="toast" class="toast hidden"></div>
-<script src="app.js"></script>
+    <div id="toast" class="toast hidden"></div>
+    <script src="app.js"></script>
 </body>
 </html>

@@ -1,0 +1,232 @@
+/* Force dark theme for trade history */
+.trade-history-section,
+.trade-history-header,
+.trade-history-list,
+.trade-item,
+.trades {
+    background-color: var(--card-dark) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius-lg) !important;
+    color: var(--text-white) !important;
+}
+
+.trade-history-title {
+    color: var(--text-white) !important;
+    font-size: 1.25rem !important;
+    font-weight: 600 !important;
+    margin-bottom: var(--spacing-md) !important;
+}
+
+.trade-item {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr 1fr !important;
+    gap: var(--spacing-md) !important;
+    padding: var(--spacing-md) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    align-items: center !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.trade-item:last-child {
+    border-bottom: none !important;
+}
+
+.trade-item:hover {
+    background-color: var(--background-elevated) !important;
+}
+
+.trade-pair {
+    color: var(--text-white) !important;
+    font-weight: 600 !important;
+    font-family: 'JetBrains Mono', monospace !important;
+}
+
+.trade-amount {
+    color: var(--text-white) !important;
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 500 !important;
+}
+
+.trade-time {
+    color: var(--text-grey) !important;
+    font-size: 0.875rem !important;
+}
+
+.trade-type {
+    font-weight: 500 !important;
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 50px !important;
+    display: inline-block !important;
+}
+
+.trade-type.buy {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: var(--success-green) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.trade-type.sell {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--danger-red) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Force dark theme for admin sections */
+.tab-content,
+.transactions-container,
+.transactions-list,
+.transaction-item,
+.users-container,
+.users-list,
+.user-item {
+    background-color: var(--card-dark) !important;
+    color: var(--text-white) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius-lg) !important;
+}
+
+/* Make sure admin sections are visible */
+#depositsTab:not(.hidden),
+#withdrawalsTab:not(.hidden) {
+    display: block !important;
+}
+
+/* Fix admin section visibility */
+.transactions-container {
+    margin: var(--spacing-md) 0 !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: var(--border-radius-lg) !important;
+    overflow: hidden !important;
+}
+
+.table-header {
+    background: var(--background-elevated) !important;
+    color: var(--text-white) !important;
+    padding: var(--spacing-md) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    font-weight: 600 !important;
+}
+
+.transaction-item {
+    padding: var(--spacing-md) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    transition: background-color 0.2s ease !important;
+}
+
+.transaction-item:hover {
+    background-color: var(--background-elevated) !important;
+}
+
+.transaction-item:last-child {
+    border-bottom: none !important;
+}
+
+.transaction-item .user-info {
+    display: flex !important;
+    align-items: center !important;
+    gap: var(--spacing-md) !important;
+}
+
+.transaction-item .user-name {
+    color: var(--text-white) !important;
+    font-weight: 600 !important;
+}
+
+.transaction-item .user-email {
+    color: var(--text-grey) !important;
+    font-size: 0.875rem !important;
+}
+
+.transaction-item .amount {
+    font-family: 'JetBrains Mono', monospace !important;
+    font-weight: 500 !important;
+    color: var(--text-white) !important;
+}
+
+.transaction-status {
+    padding: 0.25rem 0.75rem !important;
+    border-radius: 50px !important;
+    font-size: 0.875rem !important;
+    font-weight: 500 !important;
+    display: inline-block !important;
+}
+
+.status-pending {
+    background: rgba(245, 158, 11, 0.1) !important;
+    color: var(--warning-yellow) !important;
+    border: 1px solid rgba(245, 158, 11, 0.2) !important;
+}
+
+.status-completed {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: var(--success-green) !important;
+    border: 1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.status-rejected {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--danger-red) !important;
+    border: 1px solid rgba(239, 68, 68, 0.2) !important;
+}
+
+/* Enhanced Button Styles */
+.action-btn {
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--border-radius-sm) !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid transparent !important;
+}
+
+.btn-approve {
+    background: rgba(16, 185, 129, 0.1) !important;
+    color: var(--success-green) !important;
+    border-color: var(--success-green) !important;
+}
+
+.btn-approve:hover {
+    background: var(--success-green) !important;
+    color: white !important;
+}
+
+.btn-reject {
+    background: rgba(239, 68, 68, 0.1) !important;
+    color: var(--danger-red) !important;
+    border-color: var(--danger-red) !important;
+}
+
+.btn-reject:hover {
+    background: var(--danger-red) !important;
+    color: white !important;
+}
+
+/* Enhanced Navigation */
+.nav {
+    display: flex !important;
+    gap: var(--spacing-md) !important;
+    margin-left: auto !important;
+    align-items: center !important;
+}
+
+.nav-btn {
+    padding: 0.5rem 1rem !important;
+    border-radius: var(--border-radius-sm) !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    border: 1px solid var(--border-color) !important;
+    background: transparent !important;
+    color: var(--text-grey) !important;
+}
+
+.nav-btn:hover {
+    background: var(--background-elevated) !important;
+    color: var(--text-white) !important;
+}
+
+.nav-btn.active {
+    background: var(--primary-blue) !important;
+    color: white !important;
+    border-color: var(--primary-blue) !important;
+}

@@ -249,6 +249,39 @@ body[data-page="dashboard"] {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Trade History Enhanced */
+.trades {
+    background: var(--card-dark) !important;
+}
+
+.trade-history-section {
+    background: var(--card-dark) !important;
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-top: 2rem;
+}
+
+.trade-history-list {
+    background: var(--card-dark) !important;
+    padding: 0.5rem 0;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.trade-item {
+    background: var(--card-dark) !important;
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.trade-item:hover {
+    background: rgba(30, 41, 59, 0.4) !important;
+}
+
 .market-pair {
     font-weight: 500;
 }
