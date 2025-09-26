@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/config.js"></script>
 </head>
 <body class="signup-page">
     <main class="auth-shell">
@@ -208,62 +210,7 @@
 </body>
 </html>
 
-<script>
-document.getElementById('signupForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const fullName = document.getElementById('fullName').value;
-    const email = document.getElementById('email').value;
-    const username = document.getElementById('username').value;
-    const phone = document.getElementById('phone').value;
-    const country = document.getElementById('country').value;
-    const password = document.getElementById('password').value;
-    const confirmPassword = document.getElementById('confirmPassword').value;
-    const referralCode = document.getElementById('referralCode').value;
-    const errorMsg = document.getElementById('error-message');
-    
-    // Basic validation
-    if (password !== confirmPassword) {
-        toast('Passwords do not match');
-        errorMsg.textContent = 'Passwords do not match';
-        errorMsg.classList.remove('hidden');
-        return;
-    }
-    
-    // Create new user object
-    const newUser = {
-        fullName,
-        email,
-        username,
-        phone,
-        country,
-        password,
-        referralCode,
-        registrationDate: new Date().toISOString()
-    };
-    
-    const result = Store.register(newUser);
-    
-    if (result.success) {
-        // Store the registration event for admin panel
-        const registrationEvent = {
-            type: 'registration',
-            data: newUser
-        };
-        
-        // Notify admin panel if it's open
-        window.parent.postMessage(registrationEvent, '*');
-        
-        toast('Registration successful!');
-        setTimeout(() => {
-            navigate('dashboard.html');
-        }, 1000);
-    } else {
-        toast(result.error);
-        errorMsg.textContent = result.error;
-        errorMsg.classList.remove('hidden');
-    }
-});
+
 
 <div id="toast" class="toast hidden">
     <span class="toast-message"></span>
@@ -570,7 +517,6 @@ document.querySelectorAll('.toggle-password').forEach(button => {
 document.getElementById('signupForm').addEventListener('submit', async function(e) {
     e.preventDefault();
     
-    // Get form data
     const formData = {
         fullName: document.getElementById('fullName').value,
         email: document.getElementById('email').value,
@@ -589,27 +535,38 @@ document.getElementById('signupForm').addEventListener('submit', async function(
     }
 
     try {
-        // Send data to admin/server
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
+        // Sign up with Supabase
+        const { user, error: signUpError } = await supabase.auth.signUp({
+            email: formData.email,
+            password: formData.password
         });
 
-        if (response.ok) {
-            showToast('Registration successful!');
-            // Redirect to login page after successful registration
-            setTimeout(() => {
-                window.location.href = 'login.html';
-            }, 1500);
-        } else {
-            const error = await response.json();
-            showToast(error.message || 'Registration failed. Please try again.');
-        }
+        if (signUpError) throw signUpError;
+
+        // Add user to users table
+        const { error: insertError } = await supabase
+            .from('users')
+            .insert([{ 
+                email: formData.email,
+                full_name: formData.fullName,
+                username: formData.username,
+                phone: formData.phone,
+                country: formData.country,
+                referral_code: formData.referralCode,
+                status: 'active',
+                created_at: new Date().toISOString()
+            }]);
+
+        if (insertError) throw insertError;
+
+        showToast('Registration successful!');
+        // Redirect to login page after successful registration
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 1500);
+
     } catch (error) {
-        showToast('Network error. Please try again.');
+        showToast(error.message || 'Registration failed. Please try again.');
     }
 });
 
