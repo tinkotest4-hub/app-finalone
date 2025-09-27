@@ -40,6 +40,56 @@ const KEYS = {
   counters: (uid) => `counters_${uid}`
 };
 
+/* ---------- Supabase Connection ---------- */
+const SUPABASE_URL = "https://quaenmewwmtcgheqpyih.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1YWVubWV3d210Y2doZXFweWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4Mjg3MjYsImV4cCI6MjA3NDQwNDcyNn0.U6J-gBlANgXWQ05sk4-zKUGHo5GnIWsER3FggBUqJRQ";
+
+// Initialize Supabase
+let supabase = null;
+try {
+  if (window.supabase) {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (error) {
+  console.log('Supabase initialization failed, using local storage only');
+}
+
+// Sync functions
+async function syncUserToSupabase(user) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('users')
+      .upsert({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        created_at: new Date().toISOString()
+      }, { onConflict: 'id' });
+  } catch (error) {
+    console.log('Supabase user sync failed');
+  }
+}
+
+async function syncBalanceToSupabase(userId, balances) {
+  if (!supabase) return;
+  try {
+    const { error } = await supabase
+      .from('user_balances')
+      .upsert({
+        user_id: userId,
+        total: balances.total,
+        deposit: balances.deposit,
+        trading: balances.trading,
+        locked: balances.locked || 0,
+        updated_at: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+  } catch (error) {
+    console.log('Supabase balance sync failed');
+  }
+}
+
 const Store = {
   getUsers() { 
     return JSON.parse(sessionStorage.getItem(KEYS.users) || "[]"); 
@@ -68,8 +118,8 @@ const Store = {
       return { success: true, userType: "user" };
     }
     
-    // Check registered users
-    const user = users.find(u => u.email === email && u.password === password);
+    // Check registered users - FIXED: Use proper email comparison
+    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
     if (user) {
       this.setSession("user", email);
       return { success: true, userType: "user" };
@@ -81,14 +131,27 @@ const Store = {
   register(userData) {
     const users = this.getUsers();
     
-    // Check if email exists
-    if (users.some(user => user.email === userData.email)) {
+    // Check if email exists - FIXED: Use proper email comparison
+    if (users.some(user => user.email.toLowerCase() === userData.email.toLowerCase())) {
       return { success: false, error: "Email already registered" };
     }
+    
+    // Add unique ID for each user - THIS FIXES BALANCE SHARING
+    userData.id = sid();
+    userData.role = "user";
+    userData.createdAt = now();
     
     // Add new user
     users.push(userData);
     this.setUsers(users);
+    
+    // Initialize individual balances for this user - CRITICAL FIX
+    this.setBalances(userData.id, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
+    this.setCounters(userData.id, { tradeCount: 0 });
+    
+    // Sync to Supabase
+    syncUserToSupabase(userData);
+    syncBalanceToSupabase(userData.id, this.getBalances(userData.id));
     
     // Auto login after registration
     this.setSession("user", userData.email);
@@ -124,9 +187,12 @@ const Store = {
     const raw = localStorage.getItem(KEYS.balances(uid));
     return raw ? JSON.parse(raw) : { total: 0, deposit: 0, trading: 0, locked: 0 };
   },
+  
   setBalances(uid, bal) {
     bal.total = Math.round((bal.deposit + bal.trading) * 100) / 100;
     localStorage.setItem(KEYS.balances(uid), JSON.stringify(bal));
+    // Sync to Supabase
+    syncBalanceToSupabase(uid, bal);
   },
 
   getTrades(uid) { return JSON.parse(localStorage.getItem(KEYS.trades(uid)) || "[]"); },
@@ -212,28 +278,22 @@ const Store = {
 (function seed() {
   let users = Store.getUsers();
   const ensure = (email, user) => {
-    if (!users.find(u => u.email.toLowerCase() === email)) {
+    if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       users.push(user);
       Store.setUsers(users);
+      // FIXED: Use the actual user ID instead of generic "demo"
       Store.setBalances(user.id, { total: 20000, deposit: 10000, trading: 10000, locked: 0 });
       Store.setCounters(user.id, { tradeCount: 0 });
       users = Store.getUsers();
     }
   };
+  
+  // FIXED: Create unique IDs for demo and admin users
   const demoId = sid();
   ensure("demo@primeedge.com", {
     id: demoId, name: "Demo User", email: "demo@primeedge.com",
     password: "demo123", role: "user", createdAt: now()
   });
-  // Set demo account initial balance
-  if (!localStorage.getItem(KEYS.balances("demo"))) {
-    Store.setBalances("demo", {
-      total: 20000,
-      deposit: 10000,
-      trading: 10000,
-      locked: 0
-    });
-  }
   
   const adminId = sid();
   ensure("admin@primeedge.com", {
@@ -321,9 +381,18 @@ function currentUser() {
   const session = Store.getSession();
   if (!session) return null;
   
+  // FIXED: Get user by email from stored users instead of hardcoded IDs
+  const users = Store.getUsers();
+  const user = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
+  
+  if (user) {
+    return user;
+  }
+  
+  // Fallback for demo/admin if not found in users array
   if (session.email === "demo@primeedge.com") {
     return {
-      id: "demo",
+      id: "demo_fallback",
       name: "Demo User",
       email: "demo@primeedge.com",
       role: "user"
@@ -332,15 +401,14 @@ function currentUser() {
   
   if (session.email === "admin@primeedge.com") {
     return {
-      id: "admin",
+      id: "admin_fallback", 
       name: "Admin",
       email: "admin@primeedge.com",
       role: "admin"
     };
   }
   
-  const users = Store.getUsers();
-  return users.find(u => u.email === session.email) || null;
+  return null;
 }
 
 function requireAuth() {
@@ -627,7 +695,7 @@ function renderPairsSelect() {
       border: 1px solid #3a3a3a;
       border-radius: 8px;
       color: #fff;
-      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
       font-size: 1rem;
       font-weight: 500;
       appearance: none;
@@ -1055,8 +1123,8 @@ function renderPairsSelect() {
   
   // Update select options
   sel.innerHTML = "";
-  
-  // Group pairs by category
+
+// Group pairs by category
   const groupedPairs = PAIRS.reduce((acc, p) => {
     if (!acc[p.category]) acc[p.category] = [];
     acc[p.category].push(p);
@@ -1977,41 +2045,78 @@ function renderAdminTabs() {
     $(`#admin-${b.dataset.adminTab}`).classList.remove("hidden");
   }));
 }
-function renderAdminUsers() {
-  const root = $("#admin-users"); if (!root) return;
-  const users = Store.getUsers();
+
+async function renderAdminUsers() {
+  const root = $("#admin-users"); 
+  if (!root) return;
+  
+  let users = [];
+  
+  // Try Supabase first, fallback to local storage
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data) {
+        users = data;
+      } else {
+        users = Store.getUsers();
+      }
+    } catch (error) {
+      users = Store.getUsers();
+    }
+  } else {
+    users = Store.getUsers();
+  }
+  
   let html = `
     <div class="form inline" style="margin-bottom:10px">
-      <div class="label">Users: ${users.length}</div>
+      <div class="label">Users: ${users.length} ${supabase ? '(Live from Supabase)' : '(Local Storage)'}</div>
+      <button class="btn ghost" id="refreshUsers">Refresh</button>
     </div>
     <div class="card" style="padding:0">
       <table class="table">
         <thead><tr>
           <th>Name</th><th>Email</th><th>Role</th><th>Balances</th><th>Actions</th>
         </tr></thead><tbody>`;
-  users.forEach(u => {
-    const b = Store.getBalances(u.id);
+  
+  for (const u of users) {
+    // Get balances from local storage (they sync to Supabase)
+    const balances = Store.getBalances(u.id);
+    
     html += `<tr>
-      <td>${u.name}</td>
+      <td>${u.name || u.full_name}</td>
       <td>${u.email}</td>
       <td>${u.role}</td>
-      <td>T:${fmt(b.total)} • D:${fmt(b.deposit)} • Tr:${fmt(b.trading)} • L:${fmt(b.locked||0)}</td>
+      <td>T:${fmt(balances.total)} • D:${fmt(balances.deposit)} • Tr:${fmt(balances.trading)} • L:${fmt(balances.locked || 0)}</td>
       <td>
         <button class="btn ghost" data-reset="${u.id}">Set Demo Balances</button>
         <button class="btn ghost" data-credit="${u.id}">Credit/Debit</button>
       </td>
     </tr>`;
-  });
+  }
+  
   html += `</tbody></table></div>`;
   root.innerHTML = html;
 
-  root.addEventListener("click", (e) => {
+  // Refresh button
+  $("#refreshUsers")?.addEventListener("click", renderAdminUsers);
+
+  root.addEventListener("click", async (e) => {
     const rs = e.target.closest("[data-reset]");
     if (rs) {
       const uid = rs.getAttribute("data-reset");
-      Store.setBalances(uid, { total: 20000, deposit: 10000, trading: 10000, locked: 0 });
-      toast("Demo balances set"); renderAdminUsers(); return;
+      const newBalances = { total: 20000, deposit: 10000, trading: 10000, locked: 0 };
+      Store.setBalances(uid, newBalances);
+      await syncBalanceToSupabase(uid, newBalances);
+      toast("Demo balances set"); 
+      renderAdminUsers(); 
+      return;
     }
+    
     const cr = e.target.closest("[data-credit]");
     if (cr) {
       const uid = cr.getAttribute("data-credit");
@@ -2019,10 +2124,21 @@ function renderAdminUsers() {
       if (!type || !/^(deposit|trading)$/i.test(type)) return;
       const amt = Number(prompt("Enter amount: positive to credit, negative to debit:"));
       if (!amt) return;
-      const b = Store.getBalances(uid);
-      if (/^deposit$/i.test(type)) b.deposit = Math.max(0, +(b.deposit + amt).toFixed(2));
-      else b.trading = Math.max(0, +(b.trading + amt).toFixed(2));
-      Store.setBalances(uid, b); toast("Balance updated"); renderAdminUsers();
+      
+      const currentBalances = Store.getBalances(uid);
+      const newBalances = { ...currentBalances };
+      
+      if (/^deposit$/i.test(type)) {
+        newBalances.deposit = Math.max(0, +(newBalances.deposit + amt).toFixed(2));
+      } else {
+        newBalances.trading = Math.max(0, +(newBalances.trading + amt).toFixed(2));
+      }
+      
+      newBalances.total = newBalances.deposit + newBalances.trading;
+      Store.setBalances(uid, newBalances);
+      await syncBalanceToSupabase(uid, newBalances);
+      toast("Balance updated"); 
+      renderAdminUsers();
     }
   });
 }

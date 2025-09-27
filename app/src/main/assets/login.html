@@ -84,10 +84,11 @@
     <script src="app.js"></script>
     <script>
         // Check if already logged in
-        if (Store.isLoggedIn()) {
+        if (Store && Store.isLoggedIn()) {
             const session = Store.getSession();
             const userType = session ? session.userType : sessionStorage.getItem('userType');
-            navigate(userType === 'admin' ? 'admin.html' : 'dashboard.html');
+            const redirectPage = userType === 'admin' ? 'admin.html' : 'dashboard.html';
+            window.location.href = redirectPage;
         }
 
         document.getElementById('loginForm').addEventListener('submit', function(e) {
@@ -96,22 +97,21 @@
             const email = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             
+            if (!Store) {
+                showToast('System error: Store not loaded');
+                return;
+            }
+            
             const result = Store.login(email, password);
             
             if (result.success) {
-                toast('Login successful!');
+                showToast('Login successful!');
                 setTimeout(() => {
-                    // Use the navigate helper for consistent navigation
-                    if (result.userType === 'superadmin') {
-                        navigate('superadmin.html');
-                    } else if (result.userType === 'admin') {
-                        navigate('admin.html');
-                    } else {
-                        navigate('dashboard.html');
-                    }
+                    const redirectPage = result.userType === 'admin' ? 'admin.html' : 'dashboard.html';
+                    window.location.href = redirectPage;
                 }, 1000);
             } else {
-                toast(result.error);
+                showToast(result.error);
                 const errorMsg = document.getElementById('error-message');
                 errorMsg.textContent = result.error;
                 errorMsg.classList.remove('hidden');
@@ -124,6 +124,14 @@
             input.type = input.type === 'password' ? 'text' : 'password';
             this.querySelector('svg').style.color = input.type === 'password' ? 'currentColor' : '#007AFF';
         });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const messageEl = toast.querySelector('.toast-message');
+            messageEl.textContent = message;
+            toast.classList.remove('hidden');
+            setTimeout(() => toast.classList.add('hidden'), 3000);
+        }
     </script>
 </body>
 </html>
