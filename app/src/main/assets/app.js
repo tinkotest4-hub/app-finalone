@@ -12,7 +12,6 @@ function navigate(page) {
   try {
     window.location.href = page;
   } catch {
-    // very defensive: still try fallback
     location.assign(page);
   }
 }
@@ -49,6 +48,7 @@ let supabase = null;
 try {
   if (window.supabase) {
     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase connected successfully');
   }
 } catch (error) {
   console.log('Supabase initialization failed, using local storage only');
@@ -56,7 +56,11 @@ try {
 
 // Sync functions
 async function syncUserToSupabase(user) {
-  if (!supabase) return;
+  if (!supabase) {
+    console.log('Supabase not available for sync');
+    return;
+  }
+  
   try {
     const { error } = await supabase
       .from('users')
@@ -64,16 +68,30 @@ async function syncUserToSupabase(user) {
         id: user.id,
         email: user.email,
         name: user.name,
+        username: user.username,
+        phone: user.phone,
+        country: user.country,
+        referral_code: user.referralCode,
         role: user.role,
-        created_at: new Date().toISOString()
+        created_at: new Date(user.createdAt || Date.now()).toISOString()
       }, { onConflict: 'id' });
+    
+    if (error) {
+      console.log('User sync error:', error);
+    } else {
+      console.log('User synced to Supabase:', user.email);
+    }
   } catch (error) {
-    console.log('Supabase user sync failed');
+    console.log('Supabase user sync failed:', error);
   }
 }
 
 async function syncBalanceToSupabase(userId, balances) {
-  if (!supabase) return;
+  if (!supabase) {
+    console.log('Supabase not available for balance sync');
+    return;
+  }
+  
   try {
     const { error } = await supabase
       .from('user_balances')
@@ -85,8 +103,14 @@ async function syncBalanceToSupabase(userId, balances) {
         locked: balances.locked || 0,
         updated_at: new Date().toISOString()
       }, { onConflict: 'user_id' });
+    
+    if (error) {
+      console.log('Balance sync error:', error);
+    } else {
+      console.log('Balance synced for user:', userId);
+    }
   } catch (error) {
-    console.log('Supabase balance sync failed');
+    console.log('Supabase balance sync failed:', error);
   }
 }
 
@@ -100,8 +124,6 @@ const Store = {
   },
   
   login(email, password) {
-    const users = this.getUsers();
-    
     // Check admin accounts first
     if (email === "superadmin@primeedge.com" && password === "superadmin123") {
       this.setSession("superadmin", email);
@@ -118,46 +140,205 @@ const Store = {
       return { success: true, userType: "user" };
     }
     
-    // Check registered users - FIXED: Use proper email comparison
-    const user = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    if (user) {
+    // Check registered users in local storage
+    const users = this.getUsers();
+    const localUser = users.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
+    if (localUser) {
       this.setSession("user", email);
       return { success: true, userType: "user" };
     }
     
-    return { success: false, error: "Invalid email or password" };
+    // If not found locally, try Supabase
+    return this.loginFromSupabase(email, password);
   },
-  
-  register(userData) {
-    const users = this.getUsers();
-    
-    // Check if email exists - FIXED: Use proper email comparison
-    if (users.some(user => user.email.toLowerCase() === userData.email.toLowerCase())) {
-      return { success: false, error: "Email already registered" };
+
+  async loginFromSupabase(email, password) {
+    if (!supabase) {
+      return { success: false, error: "Invalid email or password" };
     }
     
-    // Add unique ID for each user - THIS FIXES BALANCE SHARING
-    userData.id = sid();
-    userData.role = "user";
-    userData.createdAt = now();
-    
-    // Add new user
-    users.push(userData);
-    this.setUsers(users);
-    
-    // Initialize individual balances for this user - CRITICAL FIX
-    this.setBalances(userData.id, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
-    this.setCounters(userData.id, { tradeCount: 0 });
-    
-    // Sync to Supabase
-    syncUserToSupabase(userData);
-    syncBalanceToSupabase(userData.id, this.getBalances(userData.id));
-    
-    // Auto login after registration
-    this.setSession("user", userData.email);
-    
-    return { success: true };
+    try {
+      // Check if user exists in Supabase
+      const { data: supabaseUsers, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email.toLowerCase());
+      
+      if (error || !supabaseUsers || supabaseUsers.length === 0) {
+        return { success: false, error: "Invalid email or password" };
+      }
+      
+      const supabaseUser = supabaseUsers[0];
+      
+      // Check if we already have a local version of this user
+      const users = this.getUsers();
+      let localUser = users.find(u => u.id === supabaseUser.id);
+      
+      if (localUser) {
+        // User exists locally - check password
+        if (localUser.password === password) {
+          this.setSession("user", email);
+          return { success: true, userType: "user" };
+        } else {
+          return { success: false, error: "Invalid email or password" };
+        }
+      } else {
+        // User exists in Supabase but not locally - create local account
+        const defaultPassword = "supabase123";
+        
+        if (password !== defaultPassword) {
+          return { success: false, error: "Use default password: supabase123" };
+        }
+        
+        // Create local user account from Supabase data
+        const newLocalUser = {
+          id: supabaseUser.id,
+          email: supabaseUser.email,
+          name: supabaseUser.name,
+          username: supabaseUser.username,
+          phone: supabaseUser.phone,
+          country: supabaseUser.country,
+          referralCode: supabaseUser.referral_code,
+          password: defaultPassword,
+          role: supabaseUser.role || "user",
+          createdAt: now()
+        };
+        
+        users.push(newLocalUser);
+        this.setUsers(users);
+        
+        // Initialize balances from Supabase if available, otherwise use defaults
+        let balances = { total: 1000, deposit: 1000, trading: 0, locked: 0 };
+        
+        try {
+          const { data: balanceData } = await supabase
+            .from('user_balances')
+            .select('*')
+            .eq('user_id', supabaseUser.id)
+            .single();
+          
+          if (balanceData) {
+            balances = {
+              total: balanceData.total || 1000,
+              deposit: balanceData.deposit || 1000,
+              trading: balanceData.trading || 0,
+              locked: balanceData.locked || 0
+            };
+          }
+        } catch (error) {
+          console.log('Error fetching balances from Supabase, using defaults');
+        }
+        
+        this.setBalances(newLocalUser.id, balances);
+        this.setCounters(newLocalUser.id, { tradeCount: 0 });
+        this.setSession("user", email);
+        
+        return { 
+          success: true, 
+          userType: "user",
+          message: "Login successful! Please change your password in settings." 
+        };
+      }
+      
+    } catch (error) {
+      console.log('Supabase login error:', error);
+      return { success: false, error: "Login failed. Please try again." };
+    }
   },
+  
+register: async function(userData) {
+    const users = this.getUsers();
+    
+    // Check if email exists
+    if (users.some(user => user.email.toLowerCase() === userData.email.toLowerCase())) {
+        return { success: false, error: "Email already registered" };
+    }
+    
+    // Check if username exists
+    if (userData.username && users.some(user => user.username && user.username.toLowerCase() === userData.username.toLowerCase())) {
+        return { success: false, error: "Username already taken" };
+    }
+    
+    try {
+        // Create user record in Supabase - USING THE WORKING METHOD
+        const userRecord = {
+            email: userData.email,
+            full_name: userData.full_name,  // USING full_name from form
+            username: userData.username,
+            phone: userData.phone,
+            country: userData.country,
+            created_at: new Date().toISOString()
+        };
+
+        console.log('Inserting user to Supabase:', userRecord);
+
+        // Insert user using fetch
+        const userResponse = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                'Prefer': 'return=representation'
+            },
+            body: JSON.stringify(userRecord)
+        });
+
+        if (!userResponse.ok) {
+            const errorData = await userResponse.json();
+            return { success: false, error: `Registration failed: ${errorData.message || userResponse.statusText}` };
+        }
+
+        const userDataFromSupabase = await userResponse.json();
+        const userId = userDataFromSupabase[0].id;
+        console.log('User created in Supabase with ID:', userId);
+
+        // Create initial balances
+        const balanceRecord = {
+            user_id: userId,
+            total: 1000,
+            deposit: 1000,
+            trading: 0,
+            locked: 0,
+            updated_at: new Date().toISOString()
+        };
+
+        const balanceResponse = await fetch(`${SUPABASE_URL}/rest/v1/user_balances`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'apikey': SUPABASE_ANON_KEY,
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify(balanceRecord)
+        });
+
+        if (!balanceResponse.ok) {
+            console.warn('Balance creation failed, but user was created');
+        }
+
+        // Add to local storage with the Supabase ID
+        userData.id = userId;
+        userData.role = "user";
+        userData.createdAt = now();
+        
+        users.push(userData);
+        this.setUsers(users);
+        
+        // Initialize local balances
+        this.setBalances(userId, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
+        this.setCounters(userId, { tradeCount: 0 });
+        
+        // Auto login after registration
+        this.setSession("user", userData.email);
+        
+        return { success: true };
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        return { success: false, error: "Registration failed. Please try again." };
+    }
+},
   
   setSession(userType, email) {
     sessionStorage.setItem(KEYS.session, "true");
@@ -191,7 +372,6 @@ const Store = {
   setBalances(uid, bal) {
     bal.total = Math.round((bal.deposit + bal.trading) * 100) / 100;
     localStorage.setItem(KEYS.balances(uid), JSON.stringify(bal));
-    // Sync to Supabase
     syncBalanceToSupabase(uid, bal);
   },
 
@@ -281,23 +461,24 @@ const Store = {
     if (!users.find(u => u.email.toLowerCase() === email.toLowerCase())) {
       users.push(user);
       Store.setUsers(users);
-      // FIXED: Use the actual user ID instead of generic "demo"
       Store.setBalances(user.id, { total: 20000, deposit: 10000, trading: 10000, locked: 0 });
       Store.setCounters(user.id, { tradeCount: 0 });
+      
+      // Sync demo users to Supabase
+      syncUserToSupabase(user);
+      syncBalanceToSupabase(user.id, Store.getBalances(user.id));
+      
       users = Store.getUsers();
     }
   };
   
-  // FIXED: Create unique IDs for demo and admin users
-  const demoId = sid();
   ensure("demo@primeedge.com", {
-    id: demoId, name: "Demo User", email: "demo@primeedge.com",
+    id: sid(), name: "Demo User", email: "demo@primeedge.com",
     password: "demo123", role: "user", createdAt: now()
   });
   
-  const adminId = sid();
   ensure("admin@primeedge.com", {
-    id: adminId, name: "Admin", email: "admin@primeedge.com",
+    id: sid(), name: "Admin", email: "admin@primeedge.com",
     password: "admin123", role: "admin", createdAt: now()
   });
 })();
@@ -381,7 +562,6 @@ function currentUser() {
   const session = Store.getSession();
   if (!session) return null;
   
-  // FIXED: Get user by email from stored users instead of hardcoded IDs
   const users = Store.getUsers();
   const user = users.find(u => u.email.toLowerCase() === session.email.toLowerCase());
   
@@ -603,19 +783,16 @@ function onLoginPage() {
   if (!form) return;
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const users = Store.getUsers();
-    const found = users.find(u =>
-      u.email.toLowerCase() === email.value.trim().toLowerCase() &&
-      u.password === pass.value
-    );
-    if (!found) {
-      msg.textContent = "Invalid email or password.";
-      msg.className = "msg error"; return;
+    const result = Store.login(email.value, pass.value);
+    
+    if (result.success) {
+      msg.textContent = result.message || "Welcome back!";
+      msg.className = "msg success";
+      setTimeout(() => navigate("dashboard.html"), 300);
+    } else {
+      msg.textContent = result.error;
+      msg.className = "msg error";
     }
-    Store.setSession(found);
-    msg.textContent = "Welcome back!";
-    msg.className = "msg success";
-    setTimeout(() => navigate("dashboard.html"), 300);
   });
 }
 
@@ -634,26 +811,21 @@ function onSignupPage() {
       msg.textContent = "Password must be at least 6 characters.";
       msg.className = "msg error"; return;
     }
-    let users = Store.getUsers();
-    if (users.find(u => u.email.toLowerCase() === email.value.trim().toLowerCase())) {
-      msg.textContent = "An account with this email already exists.";
-      msg.className = "msg error"; return;
-    }
-    const user = {
-      id: sid(),
+    
+    const result = Store.register({
       name: name.value.trim(),
       email: email.value.trim().toLowerCase(),
-      password: pass.value,
-      role: "user",
-      createdAt: now()
-    };
-    users.push(user); Store.setUsers(users);
-    Store.setBalances(user.id, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
-    Store.setCounters(user.id, { tradeCount: 0 });
-    Store.setSession(user);
-    msg.textContent = "Account created! Redirecting…";
-    msg.className = "msg success";
-    setTimeout(() => navigate("dashboard.html"), 350);
+      password: pass.value
+    });
+    
+    if (result.success) {
+      msg.textContent = "Account created! Redirecting…";
+      msg.className = "msg success";
+      setTimeout(() => navigate("dashboard.html"), 350);
+    } else {
+      msg.textContent = result.error;
+      msg.className = "msg error";
+    }
   });
 }
 
@@ -1547,6 +1719,7 @@ function renderTrades() {
     list.appendChild(row);
   });
 }
+
 function renderTradesCountdown() {
   // Only updates clock text without rebuilding list
   const me = currentUser(); if (!me) return;
@@ -1875,6 +2048,7 @@ function fakeAddress(asset) {
   };
   return addresses[asset] || addresses["ETH"];
 }
+
 function renderMyDeposits() {
   const me = currentUser(); if (!me) return;
   const root = $("#myDeposits"); if (!root) return;
@@ -1898,6 +2072,7 @@ function renderMyDeposits() {
     root.appendChild(row);
   });
 }
+
 function onDepositPage() {
   if (!requireAuth()) return;
   setupAppBar();
@@ -2013,6 +2188,7 @@ function renderMyWithdrawals() {
     root.appendChild(row);
   });
 }
+
 function onWithdrawPage() {
   if (!requireAuth()) return;
   setupAppBar(); updateBalancesUI(); renderMyWithdrawals();
@@ -2080,7 +2256,7 @@ async function renderAdminUsers() {
     <div class="card" style="padding:0">
       <table class="table">
         <thead><tr>
-          <th>Name</th><th>Email</th><th>Role</th><th>Balances</th><th>Actions</th>
+          <th>Name</th><th>Email</th><th>Username</th><th>Phone</th><th>Country</th><th>Role</th><th>Balances</th><th>Actions</th>
         </tr></thead><tbody>`;
   
   for (const u of users) {
@@ -2090,6 +2266,9 @@ async function renderAdminUsers() {
     html += `<tr>
       <td>${u.name || u.full_name}</td>
       <td>${u.email}</td>
+      <td>${u.username || '—'}</td>
+      <td>${u.phone || '—'}</td>
+      <td>${u.country || '—'}</td>
       <td>${u.role}</td>
       <td>T:${fmt(balances.total)} • D:${fmt(balances.deposit)} • Tr:${fmt(balances.trading)} • L:${fmt(balances.locked || 0)}</td>
       <td>
@@ -2148,6 +2327,7 @@ function listAllDeposits() {
   users.forEach(u => Store.getDeposits(u.id).forEach(d => rows.push({ ...d, user: u })));
   return rows.sort((a,b)=>a.createdAt-b.createdAt);
 }
+
 function listAllWithdrawals() {
   const users = Store.getUsers(); const rows = [];
   users.forEach(u => Store.getWithdrawals(u.id).forEach(w => rows.push({ ...w, user: u })));
@@ -2267,6 +2447,9 @@ function onSettingsPage() {
   const me = currentUser();
   $("#profileName") && ($("#profileName").textContent = me.name);
   $("#profileEmail") && ($("#profileEmail").textContent = me.email);
+  $("#profileUsername") && ($("#profileUsername").textContent = me.username || '—');
+  $("#profilePhone") && ($("#profilePhone").textContent = me.phone || '—');
+  $("#profileCountry") && ($("#profileCountry").textContent = me.country || '—');
 }
 
 /* ---------- Welcome ---------- */

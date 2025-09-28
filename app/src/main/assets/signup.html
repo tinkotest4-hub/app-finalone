@@ -151,12 +151,15 @@
                 return;
             }
             
-            // Use the Store.register function
+            // Use the Store.register function with ALL fields - USING full_name
             const result = Store.register({
-                name: formData.fullName,
+                full_name: formData.fullName,  // CHANGED from 'name' to 'full_name'
                 email: formData.email,
-                password: formData.password
-                // The Store.register function will add the other fields automatically
+                password: formData.password,
+                username: formData.username,
+                phone: formData.phone,
+                country: formData.country,
+                referralCode: formData.referralCode
             });
             
             if (result.success) {
