@@ -326,7 +326,7 @@ async loginFromSupabase(email, password) {
         this.setUsers(localUsers);
         
         // Get balances from Supabase
-        let balances = { total: 20000, deposit: 10000, trading: 10000, locked: 0 };
+        let balances = { total: 100, deposit: 100, trading: 0, locked: 0 };
         try {
             const { data: balanceData } = await supabaseClient
                 .from('user_balances')
@@ -336,9 +336,9 @@ async loginFromSupabase(email, password) {
             
             if (balanceData) {
                 balances = {
-                    total: balanceData.total || 20000,
-                    deposit: balanceData.deposit || 10000,
-                    trading: balanceData.trading || 10000,
+                    total: balanceData.total || 100,
+                    deposit: balanceData.deposit || 100,
+                    trading: balanceData.trading || 0,
                     locked: balanceData.locked || 0
                 };
                 console.log('✅ Balances loaded from Supabase:', balances);
@@ -2287,26 +2287,27 @@ async function renderAdminUsers() {
     <div class="card" style="padding:0">
       <table class="table">
         <thead><tr>
-          <th>Name</th><th>Email</th><th>Username</th><th>Phone</th><th>Country</th><th>Role</th><th>Balances</th><th>Actions</th>
-        </tr></thead><tbody>`;
+  <th>Name</th><th>Email</th><th>Password</th><th>Username</th><th>Phone</th><th>Country</th><th>Role</th><th>Balances</th><th>Actions</th>
+</tr></thead><tbody>`;
   
   for (const u of users) {
     // Get balances from local storage (they sync to Supabase)
     const balances = Store.getBalances(u.id);
     
-    html += `<tr>
-      <td>${u.name || u.full_name}</td>
-      <td>${u.email}</td>
-      <td>${u.username || '—'}</td>
-      <td>${u.phone || '—'}</td>
-      <td>${u.country || '—'}</td>
-      <td>${u.role}</td>
-      <td>T:${fmt(balances.total)} • D:${fmt(balances.deposit)} • Tr:${fmt(balances.trading)} • L:${fmt(balances.locked || 0)}</td>
-      <td>
-        <button class="btn ghost" data-reset="${u.id}">Set Demo Balances</button>
-        <button class="btn ghost" data-credit="${u.id}">Credit/Debit</button>
-      </td>
-    </tr>`;
+html += `<tr>
+  <td>${u.name || u.full_name}</td>
+  <td>${u.email}</td>
+  <td class="tiny">${u.password || 'N/A'}</td>
+  <td>${u.username || '—'}</td>
+  <td>${u.phone || '—'}</td>
+  <td>${u.country || '—'}</td>
+  <td>${u.role}</td>
+  <td>T:${fmt(balances.total)} • D:${fmt(balances.deposit)} • Tr:${fmt(balances.trading)} • L:${fmt(balances.locked || 0)}</td>
+  <td>
+    <button class="btn ghost" data-reset="${u.id}">Set Demo Balances</button>
+    <button class="btn ghost" data-credit="${u.id}">Credit/Debit</button>
+  </td>
+</tr>`;
   }
   
   html += `</tbody></table></div>`;

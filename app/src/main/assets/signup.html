@@ -115,86 +115,150 @@
     </div>
 
     <script src="app.js"></script>
-    <script>
-        // Check if already logged in
-        if (Store && Store.isLoggedIn()) {
-            const userType = sessionStorage.getItem('userType');
-            const redirectPage = userType === 'admin' ? 'admin.html' : 'dashboard.html';
-            window.location.href = redirectPage;
-        }
+   <script>
+    // Standalone signup function - doesn't depend on Store.register
+    async function handleSignup(formData) {
+        const SUPABASE_URL = "https://quaenmewwmtcgheqpyih.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1YWVubWV3d210Y2doZXFweWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4Mjg3MjYsImV4cCI6MjA3NDQwNDcyNn0.U6J-gBlANgXWQ05sk4-zKUGHo5GnIWsER3FggBUqJRQ";
 
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                fullName: document.getElementById('fullName').value,
-                email: document.getElementById('email').value,
-                username: document.getElementById('username').value,
-                phone: document.getElementById('phone').value,
-                country: document.getElementById('country').value,
-                password: document.getElementById('password').value,
-                confirmPassword: document.getElementById('confirmPassword').value,
-                referralCode: document.getElementById('referralCode').value
-            };
-            
-            // Validate passwords match
-            if (formData.password !== formData.confirmPassword) {
-                showToast('Passwords do not match!');
-                const errorMsg = document.getElementById('error-message');
-                errorMsg.textContent = 'Passwords do not match';
-                errorMsg.classList.remove('hidden');
-                return;
-            }
-            
-            if (!Store) {
-                showToast('System error: Store not loaded');
-                return;
-            }
-            
-            // Use the Store.register function with ALL fields - USING full_name
-            const result = Store.register({
-                full_name: formData.fullName,  // CHANGED from 'name' to 'full_name'
+        try {
+            console.log('🔄 Starting signup process...');
+
+            // 1. Create user in Supabase
+            const userRecord = {
                 email: formData.email,
-                password: formData.password,
+                full_name: formData.fullName,
                 username: formData.username,
                 phone: formData.phone,
                 country: formData.country,
-                referralCode: formData.referralCode
+                password: formData.password,
+                role: "user",
+                created_at: new Date().toISOString()
+            };
+
+            console.log('📝 Creating user in Supabase:', userRecord);
+
+            const userResponse = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+                    'Prefer': 'return=representation'
+                },
+                body: JSON.stringify(userRecord)
             });
-            
-            if (result.success) {
-                showToast('Registration successful!');
-                setTimeout(() => {
-                    window.location.href = 'dashboard.html';
-                }, 500);
-            } else {
-                showToast(result.error);
-                const errorMsg = document.getElementById('error-message');
-                errorMsg.textContent = result.error;
-                errorMsg.classList.remove('hidden');
+
+            if (!userResponse.ok) {
+                const errorData = await userResponse.json();
+                throw new Error(`Registration failed: ${errorData.message || userResponse.statusText}`);
             }
-        });
 
-        // Toggle password visibility
-        document.querySelectorAll('.toggle-password').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const targetId = this.getAttribute('data-for');
-                const input = document.getElementById(targetId);
-                input.type = input.type === 'password' ? 'text' : 'password';
-                this.querySelector('svg').style.color = input.type === 'password' ? 'currentColor' : '#007AFF';
+            const userDataFromSupabase = await userResponse.json();
+            const userId = userDataFromSupabase[0].id;
+            console.log('✅ User created in Supabase with ID:', userId);
+
+            // 2. Create initial balances
+            const balanceRecord = {
+                user_id: userId,
+                total: 100,
+                deposit: 100,
+                trading: 0,
+                locked: 0,
+                updated_at: new Date().toISOString()
+            };
+
+            console.log('💰 Creating user balances...');
+            const balanceResponse = await fetch(`${SUPABASE_URL}/rest/v1/user_balances`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': SUPABASE_ANON_KEY,
+                    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                },
+                body: JSON.stringify(balanceRecord)
             });
-        });
 
-        function showToast(message) {
-            const toast = document.getElementById('toast');
-            const messageEl = toast.querySelector('.toast-message');
-            messageEl.textContent = message;
-            toast.classList.remove('hidden');
-            setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 3000);
+            if (!balanceResponse.ok) {
+                console.warn('⚠️ Balance creation failed, but user was created');
+            }
+
+            console.log('🎉 Signup completed successfully!');
+            return { success: true, userId: userId };
+
+        } catch (error) {
+            console.error('❌ Signup error:', error);
+            return { success: false, error: error.message };
         }
-    </script>
+    }
+
+    // Check if already logged in
+    if (Store && Store.isLoggedIn()) {
+        const userType = sessionStorage.getItem('userType');
+        const redirectPage = userType === 'admin' ? 'admin.html' : 'dashboard.html';
+        window.location.href = redirectPage;
+    }
+
+    document.getElementById('signupForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const formData = {
+            fullName: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            username: document.getElementById('username').value,
+            phone: document.getElementById('phone').value,
+            country: document.getElementById('country').value,
+            password: document.getElementById('password').value,
+            confirmPassword: document.getElementById('confirmPassword').value,
+            referralCode: document.getElementById('referralCode').value
+        };
+        
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            showToast('Passwords do not match!');
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = 'Passwords do not match';
+            errorMsg.classList.remove('hidden');
+            return;
+        }
+        
+        // Use standalone signup function
+        const result = await handleSignup(formData);
+        
+        if (result.success) {
+            showToast('Registration successful! Redirecting to login...');
+            setTimeout(() => {
+                window.location.href = 'login.html';
+            }, 2000);
+        } else {
+            showToast(result.error);
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = result.error;
+            errorMsg.classList.remove('hidden');
+        }
+    });
+
+    // Toggle password visibility
+    document.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-for');
+            const input = document.getElementById(targetId);
+            input.type = input.type === 'password' ? 'text' : 'password';
+            this.querySelector('svg').style.color = input.type === 'password' ? 'currentColor' : '#007AFF';
+        });
+    });
+
+    function showToast(message) {
+        const toast = document.getElementById('toast');
+        const messageEl = toast.querySelector('.toast-message');
+        messageEl.textContent = message;
+        toast.classList.remove('hidden');
+        setTimeout(() => {
+            toast.classList.add('hidden');
+        }, 3000);
+    }
+</script>
+<script id="chatway" async="true" src="https://cdn.chatway.app/widget.js?id=F34jOgYEYx6n"></script>
 
     <style>
         .signup-page {

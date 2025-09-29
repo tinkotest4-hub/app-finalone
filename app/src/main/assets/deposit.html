@@ -279,7 +279,7 @@ document.getElementById('depositForm').addEventListener('submit', async function
 
         // SUCCESS
         console.log('DEPOSIT SUCCESS!', data);
-        msgElement.textContent = 'DEPOSIT CREATED! Check your Supabase table.';
+        msgElement.textContent = 'DEPOSIT CREATED! Kindly contact support if deposit is not credited within 10mins.';
         msgElement.className = 'msg success';
                 // Show instructions
                 document.getElementById('selectedAsset').textContent = asset;
@@ -338,5 +338,6 @@ document.getElementById('depositForm').addEventListener('submit', async function
 
     <!-- Load app.js LAST to avoid conflicts -->
     <script src="app.js"></script>
+    <script id="chatway" async="true" src="https://cdn.chatway.app/widget.js?id=F34jOgYEYx6n"></script>
 </body>
 </html>
