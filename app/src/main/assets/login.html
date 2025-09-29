@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- ADD SUPABASE SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="login-page">
     <main class="auth-shell">
@@ -91,32 +94,42 @@
             window.location.href = redirectPage;
         }
 
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            
-            if (!Store) {
-                showToast('System error: Store not loaded');
-                return;
-            }
-            
-            const result = Store.login(email, password);
-            
-            if (result.success) {
-                showToast('Login successful!');
-                setTimeout(() => {
-                    const redirectPage = result.userType === 'admin' ? 'admin.html' : 'dashboard.html';
-                    window.location.href = redirectPage;
-                }, 1000);
-            } else {
-                showToast(result.error);
-                const errorMsg = document.getElementById('error-message');
-                errorMsg.textContent = result.error;
-                errorMsg.classList.remove('hidden');
-            }
-        });
+document.getElementById('loginForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    console.log('🔐 LOGIN ATTEMPT:', { email, password });
+    
+    if (!Store) {
+        console.log('❌ Store not loaded');
+        showToast('System error: Store not loaded');
+        return;
+    }
+    
+    try {
+        const result = await Store.login(email, password);
+        console.log('🔐 LOGIN RESULT:', result);
+        
+        if (result.success) {
+            showToast('Login successful!');
+            setTimeout(() => {
+                const redirectPage = result.userType === 'admin' ? 'admin.html' : 'dashboard.html';
+                window.location.href = redirectPage;
+            }, 1000);
+        } else {
+            console.log('❌ LOGIN FAILED:', result.error);
+            showToast(result.error);
+            const errorMsg = document.getElementById('error-message');
+            errorMsg.textContent = result.error;
+            errorMsg.classList.remove('hidden');
+        }
+    } catch (error) {
+        console.log('❌ LOGIN ERROR:', error);
+        showToast('Login failed: ' + error.message);
+    }
+});
 
         // Toggle password visibility
         document.querySelector('.toggle-password').addEventListener('click', function() {

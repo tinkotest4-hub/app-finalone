@@ -248,191 +248,121 @@ const Store = {
     return this.loginFromSupabase(email, password);
   },
 
-  async loginFromSupabase(email, password) {
-    if (!supabase) {
-      return { success: false, error: "Invalid email or password" };
+async loginFromSupabase(email, password) {
+    console.log('🔐 STEP 1: Creating Supabase connection');
+    
+    // Hardcode Supabase connection directly here
+    const SUPABASE_URL = "https://quaenmewwmtcgheqpyih.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1YWVubWV3d210Y2doZXFweWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4Mjg3MjYsImV4cCI6MjA3NDQwNDcyNn0.U6J-gBlANgXWQ05sk4-zKUGHo5GnIWsER3FggBUqJRQ";
+    
+    let supabaseClient;
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        console.log('✅ STEP 1 PASSED: Supabase connection created');
+    } catch (error) {
+        console.log('❌ STEP 1 FAILED: Could not create Supabase client:', error);
+        return { success: false, error: "Database connection failed" };
     }
     
     try {
-      // Check if user exists in Supabase
-      const { data: supabaseUsers, error } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', email.toLowerCase());
-      
-      if (error || !supabaseUsers || supabaseUsers.length === 0) {
-        return { success: false, error: "Invalid email or password" };
-      }
-      
-      const supabaseUser = supabaseUsers[0];
-      
-      // Check if we already have a local version of this user
-      const users = this.getUsers();
-      let localUser = users.find(u => u.id === supabaseUser.id);
-      
-      if (localUser) {
-        // User exists locally - check password
-        if (localUser.password === password) {
-          this.setSession("user", email);
-          return { success: true, userType: "user" };
-        } else {
-          return { success: false, error: "Invalid email or password" };
-        }
-      } else {
-        // User exists in Supabase but not locally - create local account
-        const defaultPassword = "supabase123";
+        console.log('🔐 STEP 2: Querying Supabase for user:', email);
         
-        if (password !== defaultPassword) {
-          return { success: false, error: "Use default password: supabase123" };
-        }
-        
-        // Create local user account from Supabase data
-        const newLocalUser = {
-          id: supabaseUser.id,
-          email: supabaseUser.email,
-          name: supabaseUser.name,
-          username: supabaseUser.username,
-          phone: supabaseUser.phone,
-          country: supabaseUser.country,
-          referralCode: supabaseUser.referral_code,
-          password: defaultPassword,
-          role: supabaseUser.role || "user",
-          createdAt: now()
-        };
-        
-        users.push(newLocalUser);
-        this.setUsers(users);
-        
-        // Initialize balances from Supabase if available, otherwise use defaults
-        let balances = { total: 1000, deposit: 1000, trading: 0, locked: 0 };
-        
-        try {
-          const { data: balanceData } = await supabase
-            .from('user_balances')
+        // Get user from Supabase
+        const { data: users, error } = await supabaseClient
+            .from('users')
             .select('*')
-            .eq('user_id', supabaseUser.id)
-            .single();
-          
-          if (balanceData) {
-            balances = {
-              total: balanceData.total || 1000,
-              deposit: balanceData.deposit || 1000,
-              trading: balanceData.trading || 0,
-              locked: balanceData.locked || 0
-            };
-          }
-        } catch (error) {
-          console.log('Error fetching balances from Supabase, using defaults');
+            .eq('email', email.toLowerCase());
+        
+        console.log('🔐 STEP 2 RESULT:', { users, error });
+        
+        if (error) {
+            console.log('❌ STEP 2 FAILED: Database error:', error);
+            return { success: false, error: "Login failed. Try again." };
         }
         
-        this.setBalances(newLocalUser.id, balances);
-        this.setCounters(newLocalUser.id, { tradeCount: 0 });
-        this.setSession("user", email);
+        if (!users || users.length === 0) {
+            console.log('❌ STEP 2 FAILED: No account found');
+            return { success: false, error: "Invalid email or password" };
+        }
         
+        const user = users[0];
+        console.log('✅ STEP 2 PASSED: User found:', user.email);
+        
+        // Check if user has password column
+        if (!user.password) {
+            console.log('❌ User has no password set');
+            return { success: false, error: "Account setup incomplete. Contact support." };
+        }
+        
+        // Verify password
+        if (user.password !== password) {
+            console.log('❌ Wrong password for:', email);
+            return { success: false, error: "Invalid email or password" };
+        }
+        
+        console.log('✅ Password correct! Logging in...');
+        
+        // Get or create local user data
+        const localUsers = Store.getUsers();
+        const existingIndex = localUsers.findIndex(u => u.id === user.id);
+        
+        const userData = {
+            id: user.id,
+            email: user.email,
+            name: user.name || user.full_name || user.email.split('@')[0],
+            username: user.username || user.email.split('@')[0],
+            phone: user.phone || '',
+            country: user.country || '',
+            password: password,
+            role: user.role || "user",
+            createdAt: user.created_at ? new Date(user.created_at).getTime() : Date.now()
+        };
+        
+        if (existingIndex !== -1) {
+            localUsers[existingIndex] = userData;
+        } else {
+            localUsers.push(userData);
+        }
+        this.setUsers(localUsers);
+        
+        // Get balances from Supabase
+        let balances = { total: 20000, deposit: 10000, trading: 10000, locked: 0 };
+        try {
+            const { data: balanceData } = await supabaseClient
+                .from('user_balances')
+                .select('*')
+                .eq('user_id', user.id)
+                .single();
+            
+            if (balanceData) {
+                balances = {
+                    total: balanceData.total || 20000,
+                    deposit: balanceData.deposit || 10000,
+                    trading: balanceData.trading || 10000,
+                    locked: balanceData.locked || 0
+                };
+                console.log('✅ Balances loaded from Supabase:', balances);
+            } else {
+                console.log('⚠️ No balance record found, using defaults');
+            }
+        } catch (balanceError) {
+            console.log('⚠️ Balance fetch error, using defaults');
+        }
+        
+        // Set local data
+        this.setBalances(user.id, balances);
+        this.setCounters(user.id, { tradeCount: 0 });
+        this.setSession(user.role || "user", user.email, user.id);
+        
+        console.log('🎉 LOGIN SUCCESSFUL! User:', userData.email, 'Balance:', balances.total);
         return { 
-          success: true, 
-          userType: "user",
-          message: "Login successful! Please change your password in settings." 
+            success: true, 
+            userType: user.role || "user"
         };
-      }
-      
-    } catch (error) {
-      console.log('Supabase login error:', error);
-      return { success: false, error: "Login failed. Please try again." };
-    }
-  },
-  
-register: async function(userData) {
-    const users = this.getUsers();
-    
-    // Check if email exists
-    if (users.some(user => user.email.toLowerCase() === userData.email.toLowerCase())) {
-        return { success: false, error: "Email already registered" };
-    }
-    
-    // Check if username exists
-    if (userData.username && users.some(user => user.username && user.username.toLowerCase() === userData.username.toLowerCase())) {
-        return { success: false, error: "Username already taken" };
-    }
-    
-    try {
-        // Create user record in Supabase - USING THE WORKING METHOD
-        const userRecord = {
-            email: userData.email,
-            full_name: userData.full_name,  // USING full_name from form
-            username: userData.username,
-            phone: userData.phone,
-            country: userData.country,
-            created_at: new Date().toISOString()
-        };
-
-        console.log('Inserting user to Supabase:', userRecord);
-
-        // Insert user using fetch
-        const userResponse = await fetch(`${SUPABASE_URL}/rest/v1/users`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-                'Prefer': 'return=representation'
-            },
-            body: JSON.stringify(userRecord)
-        });
-
-        if (!userResponse.ok) {
-            const errorData = await userResponse.json();
-            return { success: false, error: `Registration failed: ${errorData.message || userResponse.statusText}` };
-        }
-
-        const userDataFromSupabase = await userResponse.json();
-        const userId = userDataFromSupabase[0].id;
-        console.log('User created in Supabase with ID:', userId);
-
-        // Create initial balances
-        const balanceRecord = {
-            user_id: userId,
-            total: 1000,
-            deposit: 1000,
-            trading: 0,
-            locked: 0,
-            updated_at: new Date().toISOString()
-        };
-
-        const balanceResponse = await fetch(`${SUPABASE_URL}/rest/v1/user_balances`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'apikey': SUPABASE_ANON_KEY,
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify(balanceRecord)
-        });
-
-        if (!balanceResponse.ok) {
-            console.warn('Balance creation failed, but user was created');
-        }
-
-        // Add to local storage with the Supabase ID
-        userData.id = userId;
-        userData.role = "user";
-        userData.createdAt = now();
-        
-        users.push(userData);
-        this.setUsers(users);
-        
-        // Initialize local balances
-        this.setBalances(userId, { total: 1000, deposit: 1000, trading: 0, locked: 0 });
-        this.setCounters(userId, { tradeCount: 0 });
-        
-        // Auto login after registration
-        this.setSession("user", userData.email);
-        
-        return { success: true };
         
     } catch (error) {
-        console.error('Registration error:', error);
-        return { success: false, error: "Registration failed. Please try again." };
+        console.log('💥 Login crash:', error);
+        return { success: false, error: "System error. Please try again." };
     }
 },
   
