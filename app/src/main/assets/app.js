@@ -114,6 +114,102 @@ async function syncBalanceToSupabase(userId, balances) {
   }
 }
 
+// Sync deposit to Supabase
+async function syncDepositToSupabase(deposit) {
+  if (!supabase) {
+    console.log('Supabase not available for deposit sync');
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('deposit_requests')
+      .upsert({
+        id: deposit.id,
+        user_id: deposit.user_id,
+        amount: deposit.amount,
+        asset: deposit.asset,
+        address: deposit.address,
+        status: deposit.status,
+        created_at: new Date(deposit.createdAt).toISOString(),
+        expires_at: new Date(deposit.expiresAt).toISOString()
+      }, { onConflict: 'id' });
+    
+    if (error) {
+      console.log('Deposit sync error:', error);
+    } else {
+      console.log('Deposit synced to Supabase:', deposit.id);
+    }
+  } catch (error) {
+    console.log('Supabase deposit sync failed:', error);
+  }
+}
+
+// Sync deposit status update to Supabase
+async function updateDepositInSupabase(depositId, updates) {
+  if (!supabase) {
+    console.log('Supabase not available for deposit update');
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('deposit_requests')
+      .update(updates)
+      .eq('id', depositId);
+    
+    if (error) {
+      console.log('Deposit update error:', error);
+    } else {
+      console.log('Deposit updated in Supabase:', depositId);
+    }
+  } catch (error) {
+    console.log('Supabase deposit update failed:', error);
+  }
+}
+
+// Get deposits from Supabase for admin
+// Get deposits from Supabase for admin
+async function getDepositsFromSupabase() {
+  if (!supabase) return [];
+  
+  try {
+    const { data, error } = await supabase
+      .from('deposit_requests')
+      .select('*, users(full_name, email)')
+      .order('created_at', { ascending: false });
+    
+    if (error) throw error;
+    return data || [];
+  } catch (error) {
+    console.log('Supabase deposits fetch failed:', error);
+    return [];
+  }
+}
+
+// Sync deposit status update to Supabase
+async function updateDepositInSupabase(depositId, updates) {
+  if (!supabase) {
+    console.log('Supabase not available for deposit update');
+    return;
+  }
+  
+  try {
+    const { error } = await supabase
+      .from('deposit_requests')
+      .update(updates)
+      .eq('id', depositId);
+    
+    if (error) {
+      console.log('Deposit update error:', error);
+    } else {
+      console.log('Deposit updated in Supabase:', depositId);
+    }
+  } catch (error) {
+    console.log('Supabase deposit update failed:', error);
+  }
+}
+
 const Store = {
   getUsers() { 
     return JSON.parse(sessionStorage.getItem(KEYS.users) || "[]"); 
@@ -388,22 +484,27 @@ register: async function(userData) {
   setCounters(uid, obj) { localStorage.setItem(KEYS.counters(uid), JSON.stringify(obj)); },
 
   // Deposit and Withdrawal functions
-  deposit(uid, amount) {
-    const balances = this.getBalances(uid);
-    balances.deposit += parseFloat(amount);
-    balances.total = balances.deposit + balances.trading;
-    this.setBalances(uid, balances);
-
+deposit: async function(uid, amount) {
     const deposits = this.getDeposits(uid);
-    deposits.push({
-      id: sid(),
-      amount: parseFloat(amount),
-      status: 'completed',
-      timestamp: Date.now()
-    });
+    const deposit = {
+        id: sid(),
+        uid: uid,
+        asset: "USD",
+        amount: parseFloat(amount),
+        address: fakeAddress("USD"),
+        status: 'pending',
+        timestamp: Date.now(),
+        createdAt: now(),
+        expiresAt: now() + minutes(10)
+    };
+    deposits.push(deposit);
     this.setDeposits(uid, deposits);
+    
+    // Sync to Supabase
+    await syncDepositToSupabase(deposit);
+    
     return { success: true };
-  },
+},
 
   withdraw(uid, amount) {
     const balances = this.getBalances(uid);
@@ -2322,61 +2423,170 @@ async function renderAdminUsers() {
   });
 }
 
-function listAllDeposits() {
-  const users = Store.getUsers(); const rows = [];
-  users.forEach(u => Store.getDeposits(u.id).forEach(d => rows.push({ ...d, user: u })));
-  return rows.sort((a,b)=>a.createdAt-b.createdAt);
+async function listAllDeposits() {
+  const allDeposits = [];
+  
+  // Get deposits from Supabase
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('deposit_requests')
+        .select('*, users(full_name, email)')
+        .order('created_at', { ascending: false });
+      
+      if (!error && data && data.length > 0) {
+        console.log('Found deposits in Supabase:', data.length);
+        data.forEach(dep => {
+          allDeposits.push({
+            id: dep.id,
+            uid: dep.user_id,
+            asset: dep.asset || 'USD',
+            amount: dep.amount,
+            address: dep.address,
+            createdAt: new Date(dep.created_at).getTime(),
+            expiresAt: new Date(dep.expires_at).getTime(),
+            status: dep.status,
+            user: { 
+              email: dep.users?.email || 'Unknown', 
+              name: dep.users?.full_name || 'Unknown User'
+            },
+            source: 'supabase' // Mark where it came from
+          });
+        });
+      }
+    } catch (error) {
+      console.log('Supabase deposits fetch failed:', error);
+    }
+  }
+  
+  // Also get deposits from local storage and merge
+  const users = Store.getUsers(); 
+  users.forEach(u => {
+    const userDeposits = Store.getDeposits(u.id);
+    userDeposits.forEach(d => {
+      // Only add if not already in list from Supabase
+      if (!allDeposits.find(supDep => supDep.id === d.id)) {
+        allDeposits.push({ 
+          ...d, 
+          user: u,
+          source: 'local' 
+        });
+      }
+    });
+  });
+  
+  console.log('Total deposits found:', allDeposits.length);
+  return allDeposits.sort((a,b) => b.createdAt - a.createdAt);
 }
 
-function listAllWithdrawals() {
-  const users = Store.getUsers(); const rows = [];
-  users.forEach(u => Store.getWithdrawals(u.id).forEach(w => rows.push({ ...w, user: u })));
-  return rows.sort((a,b)=>a.createdAt-b.createdAt);
-}
-
-function renderAdminDeposits() {
-  const root = $("#admin-deposits"); if (!root) return;
-  const rows = listAllDeposits();
-  let html = `<div class="card" style="padding:0"><table class="table">
-    <thead><tr><th>User</th><th>Asset</th><th>Amount</th><th>Address</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
-  rows.forEach(r => {
-    html += `<tr>
-      <td>${r.user.email}</td>
-      <td>${r.asset}</td>
-      <td>${fmt(r.amount)}</td>
-      <td class="tiny">${r.address}</td>
-      <td>${new Date(r.createdAt).toLocaleString()}</td>
-      <td>${r.status}</td>
-      <td>
-        ${r.status==="pending"?`<button class="btn buy" data-approve-dep="${r.uid}|${r.id}">Approve</button>
-        <button class="btn sell" data-reject-dep="${r.uid}|${r.id}">Reject</button>`:"—"}
-      </td>
-    </tr>`;
-  });
-  html += `</tbody></table></div>`;
-  root.innerHTML = html;
-
-  root.addEventListener("click", (e) => {
-    const a = e.target.closest("[data-approve-dep]");
-    if (a) {
-      const [uid,id] = a.getAttribute("data-approve-dep").split("|");
-      const list = Store.getDeposits(uid);
-      const d = list.find(x=>x.id===id); if (!d) return;
-      d.status = "approved"; Store.setDeposits(uid, list);
-      const b = Store.getBalances(uid); b.deposit += d.amount; Store.setBalances(uid, b);
-      toast("Deposit approved"); renderAdminDeposits();
-      return;
+async function renderAdminDeposits() {
+  const root = $("#admin-deposits"); 
+  if (!root) return;
+  
+  try {
+    const rows = await listAllDeposits();
+    let html = `<div class="card" style="padding:0"><table class="table">
+      <thead><tr><th>User</th><th>Asset</th><th>Amount</th><th>Address</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead><tbody>`;
+    
+    if (rows && rows.length > 0) {
+      rows.forEach(r => {
+        html += `<tr>
+          <td>${r.user?.email || r.user?.name || 'Unknown User'}</td>
+          <td>${r.asset}</td>
+          <td>${fmt(r.amount)}</td>
+          <td class="tiny">${r.address}</td>
+          <td>${new Date(r.createdAt).toLocaleString()}</td>
+          <td>${r.status}</td>
+          <td>
+            ${r.status==="pending"?`
+            <button class="btn buy" data-approve-dep="${r.uid}|${r.id}|${r.amount}">Approve</button>
+            <button class="btn sell" data-reject-dep="${r.uid}|${r.id}">Reject</button>
+            `:"—"}
+          </td>
+        </tr>`;
+      });
+    } else {
+      html += `<tr><td colspan="7" style="text-align:center;padding:20px;">No deposit requests found</td></tr>`;
     }
-    const r = e.target.closest("[data-reject-dep]");
-    if (r) {
-      const [uid,id] = r.getAttribute("data-reject-dep").split("|");
-      const list = Store.getDeposits(uid);
-      const d = list.find(x=>x.id===id); if (!d) return;
-      d.status = "rejected"; Store.setDeposits(uid, list);
-      toast("Deposit rejected"); renderAdminDeposits();
-      return;
-    }
-  });
+    
+    html += `</tbody></table></div>`;
+    root.innerHTML = html;
+
+    // Add click handlers - SIMPLE LOCAL STORAGE ONLY
+    // Add click handlers - HANDLES BOTH LOCAL AND SUPABASE DEPOSITS
+    root.addEventListener("click", (e) => {
+      const a = e.target.closest("[data-approve-dep]");
+      if (a) {
+        const [uid, id, amount] = a.getAttribute("data-approve-dep").split("|");
+        
+        console.log("APPROVING DEPOSIT:", {uid, id, amount});
+        
+        // Try to find deposit in local storage first
+        let list = Store.getDeposits(uid);
+        let d = list.find(x => x.id === id);
+        
+        if (d) {
+          // Deposit exists in local storage - update it
+          d.status = "approved"; 
+          Store.setDeposits(uid, list);
+        } else {
+          // Deposit only exists in Supabase - create it in local storage
+          const newDeposit = {
+            id: id,
+            uid: uid,
+            asset: "USD",
+            amount: parseFloat(amount),
+            address: "from-supabase",
+            status: "approved",
+            timestamp: Date.now(),
+            createdAt: Date.now(),
+            expiresAt: Date.now() + minutes(10)
+          };
+          list.push(newDeposit);
+          Store.setDeposits(uid, list);
+          console.log("Created deposit in local storage:", newDeposit);
+        }
+        
+        // Update local balances (ALWAYS DO THIS)
+        const b = Store.getBalances(uid); 
+        console.log("BEFORE BALANCE:", b);
+        b.deposit += parseFloat(amount); 
+        b.total = b.deposit + b.trading;
+        console.log("AFTER BALANCE:", b);
+        Store.setBalances(uid, b);
+        
+        // Also update in Supabase if available
+        if (supabase) {
+          updateDepositInSupabase(id, { status: "approved" });
+          syncBalanceToSupabase(uid, b);
+        }
+        
+        toast("Deposit approved! User credited $" + amount); 
+        renderAdminDeposits();
+        return;
+      }
+      
+      const r = e.target.closest("[data-reject-dep]");
+      if (r) {
+        const [uid, id] = r.getAttribute("data-reject-dep").split("|");
+        
+        // Update local storage only
+        const list = Store.getDeposits(uid);
+        const d = list.find(x => x.id === id); 
+        if (!d) return;
+        
+        d.status = "rejected"; 
+        Store.setDeposits(uid, list);
+        
+        toast("Deposit rejected"); 
+        renderAdminDeposits();
+        return;
+      }
+    });
+  } catch (error) {
+    console.error('Error loading deposits:', error);
+    root.innerHTML = `<div class="card">Error loading deposits: ${error.message}</div>`;
+  }
 }
 
 function renderAdminWithdrawals() {

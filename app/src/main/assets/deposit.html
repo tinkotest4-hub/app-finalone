@@ -7,6 +7,8 @@
     <link rel="stylesheet" href="style/modern.css">
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Load Supabase directly -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.38.0/dist/umd/supabase.js"></script>
 </head>
 <body data-page="deposit">
     <header class="dashboard-header">
@@ -29,9 +31,6 @@
             </a>
             <a class="btn ghost" href="settings.html">
                 <i class="fas fa-gear"></i> Settings
-            </a>
-            
-                 
             </a>
             <button id="logoutBtn" class="btn danger">
                 <i class="fas fa-sign-out-alt"></i> Logout
@@ -225,6 +224,112 @@
     </nav>
 
     <div id="toast" class="toast hidden"></div>
+
+    <!-- FINAL WORKING SCRIPT -->
+    <script>
+        // Create Supabase client - NO DEPENDENCIES
+        const supabaseUrl = 'https://quaenmewwmtcgheqpyih.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF1YWVubWV3d210Y2doZXFweWloIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg4Mjg3MjYsImV4cCI6MjA3NDQwNDcyNn0.U6J-gBlANgXWQ05sk4-zKUGHo5GnIWsER3FggBUqJRQ';
+        
+        const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+        console.log('Supabase client created');
+
+        // Handle form submit
+        document.getElementById('depositForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const asset = document.getElementById('depositAsset').value;
+            const amount = parseFloat(document.getElementById('depositAmount').value);
+            const msgElement = document.getElementById('depositMsg');
+            
+            if (!amount || amount < 10) {
+                msgElement.textContent = 'Minimum deposit amount is 10 USD';
+                msgElement.className = 'msg error';
+                return;
+            }
+
+            try {
+                const depositData = {
+                    id: 'dep_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+                    user_id: "77cd4017-dfb9-42fc-8387-9f159088f222",
+                    amount: amount,
+                    asset: asset,
+                    address: getAddress(asset),
+                    status: 'pending',
+                    created_at: new Date().toISOString(),
+                    expires_at: new Date(Date.now() + 10 * 60 * 1000).toISOString()
+                };
+
+                console.log('Inserting deposit:', depositData);
+
+                // INSERT INTO SUPABASE
+                const { data, error } = await supabaseClient
+                    .from('deposit_requests')
+                    .insert([depositData]);
+
+                if (error) throw error;
+
+                // SUCCESS
+                console.log('DEPOSIT SUCCESS!', data);
+                msgElement.textContent = 'DEPOSIT CREATED! Check your Supabase table.';
+                msgElement.className = 'msg success';
+
+                // Show instructions
+                document.getElementById('selectedAsset').textContent = asset;
+                document.getElementById('selectedAmount').textContent = amount + ' USD';
+                document.getElementById('depAddress').textContent = getAddress(asset);
+                document.getElementById('depositGenerated').classList.remove('hidden');
+
+                startCountdown(10 * 60);
+
+            } catch (error) {
+                console.error('Error:', error);
+                msgElement.textContent = 'Error: ' + error.message;
+                msgElement.className = 'msg error';
+            }
+        });
+
+        function getAddress(asset) {
+            const addresses = {
+                'BTC': 'bc1qd7lz35hfw2a4xwm0m9dpptwlc8d0h5r0gckl2s',
+                'ETH': '0x830D40268601556eA49e824C25C1CcE0bd0976F9',
+                'USDT-TRC20': 'TXwZZxyTiskyfzYmcuYJ2HFHnoLo1DJJkv',
+                'USDC-TRC20': 'TXwZZxyTiskyfzYmcuYJ2HFHnoLo1DJJkv'
+            };
+            return addresses[asset];
+        }
+
+        function startCountdown(duration) {
+            const countdownElement = document.getElementById('depCountdown');
+            let timer = duration;
+            const interval = setInterval(function () {
+                const minutes = parseInt(timer / 60, 10);
+                const seconds = parseInt(timer % 60, 10);
+                countdownElement.textContent = (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+                if (--timer < 0) {
+                    clearInterval(interval);
+                    countdownElement.textContent = "Expired";
+                }
+            }, 1000);
+        }
+
+        // Copy address
+        document.getElementById('copyAddrBtn').addEventListener('click', function() {
+            const address = document.getElementById('depAddress').textContent;
+            navigator.clipboard.writeText(address);
+            alert('Address copied!');
+        });
+
+        // Modal
+        document.getElementById('showAddressesBtn').addEventListener('click', function() {
+            document.getElementById('addressesModal').classList.remove('hidden');
+        });
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            document.getElementById('addressesModal').classList.add('hidden');
+        });
+    </script>
+
+    <!-- Load app.js LAST to avoid conflicts -->
     <script src="app.js"></script>
 </body>
 </html>
